@@ -319,7 +319,7 @@ cc.loader = {
         cb = args[2];
         var ccPath = cc.path;
         for(var i = 0, li = jsList.length; i < li; ++i){
-            require(ccPath.join(baseDir, jsList[i]));
+            executeScript(ccPath.join(baseDir, jsList[i]));
         }
         if(cb) cb();
     },
@@ -1024,7 +1024,7 @@ cc.game = {
      */
     prepare : function(cb){
         var self = this, config = self.config, CONFIG_KEY = self.CONFIG_KEY, loader = cc.loader;
-        require("jsb.js");
+        executeScript("jsb.js");
         self._prepareCalled = true;
         loader.loadJsWithImg("", config[CONFIG_KEY.jsList] || [], function(err){
             if(err) throw err;

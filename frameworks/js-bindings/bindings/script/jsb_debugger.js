@@ -168,7 +168,7 @@ cc.log("connected 001");
 this._prepareDebugger = function (global) {
 
     globalDebuggee = global;
-    require = global.require;
+    executeScript = global.executeScript;
     cc = global.cc;
 
     executeScript('debugger/DevToolsUtils.js', "debug");
