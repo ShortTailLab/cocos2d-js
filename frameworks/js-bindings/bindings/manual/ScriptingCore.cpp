@@ -307,10 +307,10 @@ bool JSBCore_os(JSContext *cx, uint32_t argc, jsval *vp)
 
 bool JSB_core_restartVM(JSContext *cx, uint32_t argc, jsval *vp)
 {
-	JSB_PRECONDITION2(argc==0, cx, false, "Invalid number of arguments in executeScript");
+    JSB_PRECONDITION2(argc==0, cx, false, "Invalid number of arguments in executeScript");
     ScriptingCore::getInstance()->reset();
     JS_SET_RVAL(cx, vp, JSVAL_VOID);
-	return true;
+    return true;
 };
 
 void registerDefaultClasses(JSContext* cx, JSObject* global) {
@@ -341,7 +341,6 @@ void registerDefaultClasses(JSContext* cx, JSObject* global) {
     JS_DefineFunction(cx, jsc, "executeScript", ScriptingCore::executeScript, 1, JSPROP_READONLY | JSPROP_PERMANENT | JSPROP_ENUMERATE );
 
     // register some global functions
-    JS_DefineFunction(cx, global, "require", ScriptingCore::executeScript, 1, JSPROP_READONLY | JSPROP_PERMANENT);
     JS_DefineFunction(cx, global, "log", ScriptingCore::log, 0, JSPROP_READONLY | JSPROP_PERMANENT);
     JS_DefineFunction(cx, global, "executeScript", ScriptingCore::executeScript, 1, JSPROP_READONLY | JSPROP_PERMANENT);
     JS_DefineFunction(cx, global, "forceGC", ScriptingCore::forceGC, 0, JSPROP_READONLY | JSPROP_PERMANENT);
@@ -463,6 +462,22 @@ static JSSecurityCallbacks securityCallbacks = {
     NULL
 };
 
+static struct timeval gLAST_TV;
+static void customGCCallback(JSRuntime *rt, JSGCStatus status, void *data)
+{
+    if( !status ) gettimeofday(&gLAST_TV, NULL);
+    else
+    {
+        struct timeval gNow;
+        gettimeofday(&gNow, NULL);
+        
+        int delta = - gLAST_TV.tv_sec*1000 - gLAST_TV.tv_usec/1000 +
+        gNow.tv_sec*1000 + gNow.tv_usec/1000;
+        
+        LOGD("[GC] done in %dms", delta);
+    }
+}
+
 void ScriptingCore::createGlobalContext() {
     if (this->_cx && this->_rt) {
         ScriptingCore::removeAllRoots(this->_cx);
@@ -480,10 +495,11 @@ void ScriptingCore::createGlobalContext() {
     //JS_SetCStringsAreUTF8();
     this->_rt = JS_NewRuntime(8L * 1024L * 1024L, JS_USE_HELPER_THREADS);
     JS_SetGCParameter(_rt, JSGC_MAX_BYTES, 0xffffffff);
-	
+    JS_SetGCCallback(_rt, &customGCCallback, NULL);
+    
     JS_SetTrustedPrincipals(_rt, &shellTrustedPrincipals);
     JS_SetSecurityCallbacks(_rt, &securityCallbacks);
-	JS_SetNativeStackQuota(_rt, JSB_MAX_STACK_QUOTA);
+    JS_SetNativeStackQuota(_rt, JSB_MAX_STACK_QUOTA);
     
     this->_cx = JS_NewContext(_rt, 8192);
     
@@ -503,6 +519,7 @@ void ScriptingCore::createGlobalContext() {
 #if defined(JS_GC_ZEAL) && defined(DEBUG)
     //JS_SetGCZeal(this->_cx, 2, JS_DEFAULT_ZEAL_FREQ);
 #endif
+    JS_BeginRequest(_cx);
     this->_global = NewGlobalObject(_cx);
 
     JSAutoCompartment ac(_cx, _global);
@@ -512,6 +529,7 @@ void ScriptingCore::createGlobalContext() {
         sc_register_sth callback = *it;
         callback(this->_cx, this->_global);
     }
+    JS_EndRequest(_cx);
 }
 
 static std::string RemoveFileExt(const std::string& filePath) {
@@ -526,26 +544,26 @@ static std::string RemoveFileExt(const std::string& filePath) {
 
 void ScriptingCore::compileScript(const char *path, JSObject* global, JSContext* cx)
 {
-	if (!path) {
-		return ;
-	}
+    if (!path) {
+        return ;
+    }
 
-	cocos2d::FileUtils *futil = cocos2d::FileUtils::getInstance();
+    cocos2d::FileUtils *futil = cocos2d::FileUtils::getInstance();
 
-	if (global == NULL) {
-		global = _global;
-	}
-	if (cx == NULL) {
-		cx = _cx;
-	}
+    if (global == NULL) {
+        global = _global;
+    }
+    if (cx == NULL) {
+        cx = _cx;
+    }
 
-	JSAutoCompartment ac(cx, global);
+    JSAutoCompartment ac(cx, global);
+    JS_BeginRequest(cx);
+    JS::RootedScript script(cx);
+    JS::RootedObject obj(cx, global);
 
-	JS::RootedScript script(cx);
-	JS::RootedObject obj(cx, global);
-
-	// a) check jsc file first
-	std::string byteCodePath = RemoveFileExt(std::string(path)) + BYTE_CODE_FILE_EXT;
+    // a) check jsc file first
+    std::string byteCodePath = RemoveFileExt(std::string(path)) + BYTE_CODE_FILE_EXT;
 
     // Check whether '.jsc' files exist to avoid outputing log which says 'couldn't find .jsc file'.
     if (futil->isFileExist(byteCodePath))
@@ -557,55 +575,58 @@ void ScriptingCore::compileScript(const char *path, JSObject* global, JSContext*
         }
     }
 
-	// b) no jsc file, check js file
-	if (!script)
-	{
-		/* Clear any pending exception from previous failed decoding.  */
-		ReportException(cx);
+    // b) no jsc file, check js file
+    if (!script)
+    {
+        /* Clear any pending exception from previous failed decoding.  */
+        ReportException(cx);
 
-		std::string fullPath = futil->fullPathForFilename(path);
-		JS::CompileOptions options(cx);
-		options.setUTF8(true).setFileAndLine(fullPath.c_str(), 1);
+        std::string fullPath = futil->fullPathForFilename(path);
+        JS::CompileOptions options(cx);
+        options.setUTF8(true).setFileAndLine(fullPath.c_str(), 1);
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
-		std::string jsFileContent = futil->getStringFromFile(fullPath);
-		if (!jsFileContent.empty())
-		{
-			script = JS::Compile(cx, obj, options, jsFileContent.c_str(), jsFileContent.size());
-		}
+        std::string jsFileContent = futil->getStringFromFile(fullPath);
+        if (!jsFileContent.empty())
+        {
+            script = JS::Compile(cx, obj, options, jsFileContent.c_str(), jsFileContent.size());
+        }
 #else
-		script = JS::Compile(cx, obj, options, fullPath.c_str());
+        script = JS::Compile(cx, obj, options, fullPath.c_str());
 #endif
-	}
-	if (script) {
-		filename_script[path] = script;
-	}
+    }
+    if (script) {
+        filename_script[path] = script;
+    }
+    JS_EndRequest(cx);
 }
 
 bool ScriptingCore::runScript(const char *path, JSObject* global, JSContext* cx)
 {
-	if (global == NULL) {
-		global = _global;
-	}
-	if (cx == NULL) {
-		cx = _cx;
-	}
-	if (!filename_script[path])
-	{
-		compileScript(path,global,cx );
-	}
-	JSScript * script = filename_script[path];
-	bool evaluatedOK = false;
-	if (script) {
-		jsval rval;
-		JSAutoCompartment ac(cx, global);
-		evaluatedOK = JS_ExecuteScript(cx, global, script, &rval);
-		if (false == evaluatedOK) {
-			cocos2d::log("(evaluatedOK == JS_FALSE)");
-			JS_ReportPendingException(cx);
-		}
-	}
-	return evaluatedOK;
+    if (global == NULL) {
+        global = _global;
+    }
+    if (cx == NULL) {
+        cx = _cx;
+    }
+    if (!filename_script[path])
+    {
+        compileScript(path,global,cx );
+    }
+    JSScript * script = filename_script[path];
+    bool evaluatedOK = false;
+    if (script) {
+        jsval rval;
+        JS_BeginRequest(cx);
+        JSAutoCompartment ac(cx, global);
+        evaluatedOK = JS_ExecuteScript(cx, global, script, &rval);
+        if (false == evaluatedOK) {
+            cocos2d::log("(evaluatedOK == JS_FALSE)");
+            JS_ReportPendingException(cx);
+        }
+        JS_EndRequest(cx);
+    }
+    return evaluatedOK;
 }
 
 void ScriptingCore::reset()
@@ -651,10 +672,30 @@ void ScriptingCore::cleanup()
 
 void ScriptingCore::reportError(JSContext *cx, const char *message, JSErrorReport *report)
 {
-    js_log("%s:%u:%s\n",
-            report->filename ? report->filename : "<no filename=\"filename\">",
-            (unsigned int) report->lineno,
-            message);
+    std::string typeStr = "";
+    if(report->flags == JSREPORT_WARNING)
+        typeStr = "WARNING";
+    else if(report->flags == JSREPORT_EXCEPTION)
+        typeStr = "EXCEPTION";
+    else if(report->flags == JSREPORT_STRICT)
+        typeStr = "STRICT";
+    else
+        typeStr = "ERROR";
+    
+    LOGD("\n");
+    LOGD("********** ERROR REPORT **********\n"
+         "%s: %s at\n"
+         "%s:%u\n",
+         typeStr.c_str(),
+         message,
+         report->filename ? report->filename : "Unknown file",
+         (unsigned int) report->lineno);
+    if(JS_GetDebugMode(cx))
+    {
+        LOGD("Stacktrace:");
+        js_DumpBacktrace(cx);
+    }
+    LOGD("**********************************\n");
 };
 
 
@@ -990,6 +1031,8 @@ bool ScriptingCore::executeFunctionWithOwner(jsval owner, const char *name, uint
     bool bRet = false;
     bool hasAction;
     JSContext* cx = this->_cx;
+    JS_BeginRequest(cx);
+    
     JS::RootedValue temp_retval(cx);
     JSObject* obj = JSVAL_TO_OBJECT(owner);
     
@@ -1014,6 +1057,8 @@ bool ScriptingCore::executeFunctionWithOwner(jsval owner, const char *name, uint
             }
         }
     }while(0);
+    
+    JS_EndRequest(cx);
     return bRet;
 }
 
@@ -1021,7 +1066,7 @@ bool ScriptingCore::handleKeybardEvent(void* nativeObj, cocos2d::EventKeyboard::
 {
     JSB_AUTOCOMPARTMENT_WITH_GLOBAL_OBJCET
     
-	js_proxy_t * p = jsb_get_native_proxy(nativeObj);
+    js_proxy_t * p = jsb_get_native_proxy(nativeObj);
 
     if (nullptr == p)
         return false;
@@ -1321,16 +1366,16 @@ static void serverEntryPoint(void)
         int optval = 1;
         if ((setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval))) < 0) {
             close(s);
-			TRACE_DEBUGGER_SERVER("debug server : error setting socket option SO_REUSEADDR");
+            TRACE_DEBUGGER_SERVER("debug server : error setting socket option SO_REUSEADDR");
             return;
         }
         
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-		if ((setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval))) < 0) {
-			close(s);
-			TRACE_DEBUGGER_SERVER("debug server : error setting socket option SO_NOSIGPIPE");
-			return;
-		}
+        if ((setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval))) < 0) {
+            close(s);
+            TRACE_DEBUGGER_SERVER("debug server : error setting socket option SO_NOSIGPIPE");
+            return;
+        }
 #endif //(CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
         
         if ((::bind(s, rp->ai_addr, rp->ai_addrlen)) == 0) {
@@ -1340,7 +1385,7 @@ static void serverEntryPoint(void)
         s = -1;
     }
     if (s < 0 || rp == NULL) {
-		TRACE_DEBUGGER_SERVER("debug server : error creating/binding socket");
+        TRACE_DEBUGGER_SERVER("debug server : error creating/binding socket");
         return;
     }
     
@@ -1348,7 +1393,7 @@ static void serverEntryPoint(void)
     
     listen(s, 1);
     
-	while (true) {
+    while (true) {
         clientSocket = accept(s, NULL, NULL);
         
         if (clientSocket < 0)
@@ -1380,7 +1425,7 @@ static void serverEntryPoint(void)
             
             close(clientSocket);
         }
-	} // while(true)
+    } // while(true)
 }
 
 bool JSBDebug_BufferWrite(JSContext* cx, unsigned argc, jsval* vp)
@@ -1395,6 +1440,13 @@ bool JSBDebug_BufferWrite(JSContext* cx, unsigned argc, jsval* vp)
     return true;
 }
 
+JSTrapStatus throwHook(JSContext *cx, JSScript *script, jsbytecode *pc, jsval *rval, void *closure)
+{
+    const char* filename = JS_GetScriptFilename(cx, script);
+    LOGD("!!! exception throw from %s", filename);
+    return JSTRAP_ERROR;
+}
+
 void ScriptingCore::enableDebugger()
 {
     if (_debugGlobal == NULL)
@@ -1402,6 +1454,11 @@ void ScriptingCore::enableDebugger()
         JSAutoCompartment ac0(_cx, _global);
         
         JS_SetDebugMode(_cx, true);
+        
+        // install an exception hook.
+//        JS_SetThrowHook(_rt, throwHook, nullptr);
+        
+        JS_BeginRequest(_cx);
         
         _debugGlobal = NewGlobalObject(_cx, true);
         // Adds the debugger object to root, otherwise it may be collected by GC.
@@ -1426,6 +1483,7 @@ void ScriptingCore::enableDebugger()
         if (!ok) {
             JS_ReportPendingException(_cx);
         }
+        JS_EndRequest(_cx);
         
         // start bg thread
         auto t = std::thread(&serverEntryPoint);
