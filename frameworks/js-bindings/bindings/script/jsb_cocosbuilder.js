@@ -7,7 +7,8 @@ cc.BuilderReader._resourcePath = "";
 
 cc.BuilderReader._controllerClassCache = {};
 cc.BuilderReader.registerController = function(controllerName, controller){
-    cc.BuilderReader._controllerClassCache[controllerName] = cc.Class.extend(controller);
+//    cc.BuilderReader._controllerClassCache[controllerName] = cc.Class.extend(controller);
+    cc.BuilderReader._controllerClassCache[controllerName] = (controller);
 };
 
 cc.BuilderReader.setResourcePath = function (rootPath) {
