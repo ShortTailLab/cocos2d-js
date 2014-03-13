@@ -677,7 +677,10 @@ void ScriptingCore::reportError(JSContext *cx, const char *message, JSErrorRepor
     if(report->flags == JSREPORT_WARNING)
         typeStr = "WARNING";
     else if(report->flags == JSREPORT_EXCEPTION)
+    {
         typeStr = "EXCEPTION";
+        return;
+    }
     else if(report->flags == JSREPORT_STRICT)
         typeStr = "STRICT";
     else
@@ -1482,7 +1485,7 @@ void ScriptingCore::enableDebugger()
         JS_SetDebugMode(_cx, true);
         
         // install an exception hook.
-//        JS_SetThrowHook(_rt, throwHook, nullptr);
+        //JS_SetThrowHook(_rt, throwHook, nullptr);
         
         JS_BeginRequest(_cx);
         
