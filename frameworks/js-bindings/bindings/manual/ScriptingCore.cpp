@@ -679,7 +679,6 @@ void ScriptingCore::reportError(JSContext *cx, const char *message, JSErrorRepor
     else if(report->flags == JSREPORT_EXCEPTION)
     {
         typeStr = "EXCEPTION";
-        return;
     }
     else if(report->flags == JSREPORT_STRICT)
         typeStr = "STRICT";
@@ -694,7 +693,8 @@ void ScriptingCore::reportError(JSContext *cx, const char *message, JSErrorRepor
          message,
          report->filename ? report->filename : "Unknown file",
          (unsigned int) report->lineno);
-    if(JS_GetDebugMode(cx))
+    
+    if(JS_GetDebugMode(cx) && typeStr != "EXCEPTION")
     {
         LOGD("Stacktrace:");
         js_DumpBacktrace(cx);
