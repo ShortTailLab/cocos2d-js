@@ -3,17 +3,16 @@
 #include "cocosbuilder/js_bindings_ccbreader.h"
 #include "SimpleAudioEngine.h"
 #include "jsb_cocos2dx_auto.hpp"
-#include "jsb_cocos2dx_gui_auto.hpp"
+#include "jsb_cocos2dx_ui_auto.hpp"
 #include "jsb_cocos2dx_studio_auto.hpp"
 #include "jsb_cocos2dx_extension_auto.hpp"
 #include "jsb_cocos2dx_builder_auto.hpp"
-#include "gui/jsb_cocos2dx_gui_manual.h"
+#include "ui/jsb_cocos2dx_ui_manual.h"
 #include "extension/jsb_cocos2dx_extension_manual.h"
 #include "cocostudio/jsb_cocos2dx_studio_manual.h"
 #include "localstorage/js_bindings_system_registration.h"
 #include "chipmunk/js_bindings_chipmunk_registration.h"
 #include "jsb_opengl_registration.h"
-#include "Runtime.h"
 
 USING_NS_CC;
 using namespace CocosDenshion;
@@ -39,8 +38,6 @@ bool AppDelegate::applicationDidFinishLaunching()
 
     // turn on display FPS
     director->setDisplayStats(true);
-	auto designSize = Size(480, 320);
-    glview->setDesignResolutionSize(designSize.width, designSize.height, ResolutionPolicy::EXACT_FIT);
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0 / 60);
     
@@ -60,15 +57,11 @@ bool AppDelegate::applicationDidFinishLaunching()
     sc->addRegisterCallback(jsb_register_chipmunk);
     sc->start();
     
-#ifdef COCOS2D_DEBUG
-    startRuntime();
-#else
+
     ScriptEngineProtocol *engine = ScriptingCore::getInstance();
 	ScriptEngineManager::getInstance()->setScriptEngine(engine);
-    ScriptingCore::getInstance()->runScript("jsb_boot.js");
 	ScriptingCore::getInstance()->runScript("main.js");
-#endif
-    
+
     return true;
 }
 

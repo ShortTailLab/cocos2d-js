@@ -22,14 +22,14 @@
  THE SOFTWARE.
  ****************************************************************************/
 var LISTVIEW_RES = [
-    "res/cocosgui/UIEditorTest/UIListView_Editor/UIListView_Vertical_Editor/ui_listview_editor_1.json",
-    "res/cocosgui/UIEditorTest/UIListView_Editor/UIListView_Horizontal_Editor/ui_listview_horizontal_editor_1.json"
+    "res/cocosui/UIEditorTest/UIListView_Editor/UIListView_Vertical_Editor/ui_listview_editor_1.json",
+    "res/cocosui/UIEditorTest/UIListView_Editor/UIListView_Horizontal_Editor/ui_listview_horizontal_editor_1.json"
 ];
 var LISTVIEW_INDEX = 0;
 var UIListViewEditorTest = UIBaseLayer.extend({
     ctor: function () {
         this._super();
-        var root = ccs.guiReader.widgetFromJsonFile(LISTVIEW_RES[LISTVIEW_INDEX]);
+        var root = ccs.uiReader.widgetFromJsonFile(LISTVIEW_RES[LISTVIEW_INDEX]);
         this._mainNode.addChild(root);
 
         var back_label = ccui.helper.seekWidgetByName(root, "back");
@@ -60,7 +60,7 @@ var UIListViewEditorTest = UIBaseLayer.extend({
     },
     selectedItemEvent: function (sender, type) {
         switch (type) {
-            case ccui.LISTVIEW_EVENT_SELECTED_ITEM:
+            case ccui.ListView.EVENT_SELECTED_ITEM:
                 var listViewEx = sender;
                 cc.log("select child index = " + listViewEx.getCurSelectedIndex());
                 break;
@@ -70,7 +70,7 @@ var UIListViewEditorTest = UIBaseLayer.extend({
         }
     },
     previousCallback: function (render, type) {
-        if (type == ccui.TOUCH_EVENT_TYPE_ENDED) {
+        if (type == ccui.Widget.TOUCH_ENDED) {
             LISTVIEW_INDEX--;
             if (LISTVIEW_INDEX < 0)LISTVIEW_INDEX = LISTVIEW_RES.length-1;
             if (LISTVIEW_INDEX >= LISTVIEW_RES.length)LISTVIEW_INDEX = 0;
@@ -78,7 +78,7 @@ var UIListViewEditorTest = UIBaseLayer.extend({
         }
     },
     nextCallback: function (render, type) {
-        if (type == ccui.TOUCH_EVENT_TYPE_ENDED) {
+        if (type == ccui.Widget.TOUCH_ENDED) {
             LISTVIEW_INDEX++;
             if (LISTVIEW_INDEX < 0)LISTVIEW_INDEX = LISTVIEW_RES.length-1;
             if (LISTVIEW_INDEX >= LISTVIEW_RES.length)LISTVIEW_INDEX = 0;

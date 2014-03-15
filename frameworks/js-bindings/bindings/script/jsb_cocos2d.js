@@ -19,25 +19,25 @@ cc.TARGET_PLATFORM = {
 cc.ResolutionPolicy = {
     // The entire application is visible in the specified area without trying to preserve the original aspect ratio.
     // Distortion can occur, and the application may appear stretched or compressed.
-EXACT_FIT:0,
+    EXACT_FIT:0,
     // The entire application fills the specified area, without distortion but possibly with some cropping,
     // while maintaining the original aspect ratio of the application.
-NO_BORDER:1,
+    NO_BORDER:1,
     // The entire application is visible in the specified area without distortion while maintaining the original
     // aspect ratio of the application. Borders can appear on two sides of the application.
-SHOW_ALL:2,
+    SHOW_ALL:2,
     // The application takes the height of the design resolution size and modifies the width of the internal
     // canvas so that it fits the aspect ratio of the device
     // no distortion will occur however you must make sure your application works on different
     // aspect ratios
-FIXED_HEIGHT:3,
+    FIXED_HEIGHT:3,
     // The application takes the width of the design resolution size and modifies the height of the internal
     // canvas so that it fits the aspect ratio of the device
     // no distortion will occur however you must make sure your application works on different
     // aspect ratios
-FIXED_WIDTH:4,
+    FIXED_WIDTH:4,
 
-UNKNOWN:5
+    UNKNOWN:5
 };
 
 cc.LANGUAGE_ENGLISH    = 0;
@@ -458,50 +458,6 @@ cc.defineGetterSetter(_proto, "ORANGE", _proto._getOrange);
 _proto.GRAY;
 cc.defineGetterSetter(_proto, "GRAY", _proto._getGray);
 
-//
-// Bindings Overrides
-//
-// MenuItemToggle
-cc.MenuItemToggle.create = function( /* var args */) {
-
-    var n = arguments.length;
-
-    if (typeof arguments[n-2] === 'function' || typeof arguments[n-1] === 'function') {
-        var args = Array.prototype.slice.call(arguments);
-        var obj = null;
-        if( typeof arguments[n-2] === 'function' )
-            obj = args.pop();
-
-        var func = args.pop();
-
-        // create it with arguments,
-        var item = cc.MenuItemToggle._create.apply(this, args);
-
-        // then set the callback
-        if( obj !== null )
-            item.setCallback(func, obj);
-        else
-            item.setCallback(func);
-        return item;
-    } else {
-        return cc.MenuItemToggle._create.apply(this, arguments);
-    }
-};
-
-// LabelAtlas
-cc.LabelAtlas.create = function( a,b,c,d,e ) {
-
-    var n = arguments.length;
-
-    if ( n == 5) {
-        return cc.LabelAtlas._create(a,b,c,d,e.charCodeAt(0));
-    } else {
-        return cc.LabelAtlas._create.apply(this, arguments);
-    }
-};
-
-cc.LayerMultiplex.create = cc.LayerMultiplex.createWithArray;
-
 
 /**
  * Associates a base class with a native superclass
@@ -633,21 +589,24 @@ cc.Layer.extend = cc.Class.extend;
 cc.LayerGradient.extend = cc.Class.extend;
 cc.LayerColor.extend = cc.Class.extend;
 cc.Sprite.extend = cc.Class.extend;
+cc.Menu.extend = cc.Class.extend;
+cc.MenuItem.extend = cc.Class.extend;
 cc.MenuItemFont.extend = cc.Class.extend;
+cc.MenuItemToggle.extend = cc.Class.extend;
 cc.Scene.extend = cc.Class.extend;
 cc.DrawNode.extend = cc.Class.extend;
 
 // Cocos2d-html5 supports multi scene resources preloading.
 // This is a compatible function for JSB.
 cc.Loader = cc.Class.extend({
-                            initWith:function (resources, selector, target) {
-                            if (selector) {
-                            this._selector = selector;
-                            this._target = target;
-                            }
-                            this._selector.call(this._target);
-                            }
-                            });
+	initWith:function (resources, selector, target) {
+		if (selector) {
+			this._selector = selector;
+			this._target = target;
+		}
+		this._selector.call(this._target);
+	}
+});
 
 cc.Loader.preload = function (resources, selector, target) {
     if (!this._instance) {
