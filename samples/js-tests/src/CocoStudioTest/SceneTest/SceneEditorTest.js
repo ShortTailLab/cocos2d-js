@@ -121,7 +121,7 @@ var SceneEditorTestLayer = BaseTestLayer.extend({
         ccs.armatureDataManager.clear();
         ccs.sceneReader.clear();
         ccs.actionManager.clear();
-        ccs.guiReader.clear();
+        ccs.uiReader.clear();
         this._super();
     },
     initSize:function(node){
@@ -337,7 +337,7 @@ var BackgroundComponentTest = SceneEditorTestLayer.extend({
         this._super();
         var node = ccs.sceneReader.createNodeWithSceneFile("res/scenetest/BackgroundComponentTest/BackgroundComponentTest.json");
         this.addChild(node);
-        ccs.actionManager.playActionByName("startMenu_1.json", "Animation1");
+        //ccs.actionManager.playActionByName("startMenu_1.json", "Animation1");
 
         var audio = node.getComponent("CCBackgroundAudio");
         audio.playBackgroundMusic();
@@ -387,7 +387,7 @@ var TriggerTest = SceneEditorTestLayer.extend({
         this._super();
         var node = ccs.sceneReader.createNodeWithSceneFile("res/scenetest/TriggerTest/TriggerTest.json");
         this.addChild(node);
-        ccs.actionManager.playActionByName("startMenu_1.json", "Animation1");
+        //ccs.actionManager.playActionByName("startMenu_1.json", "Animation1");
 
         this.schedule(this.gameLogic);
         ccs.sendEvent(TRIGGER_EVENT_ENTERSCENE);

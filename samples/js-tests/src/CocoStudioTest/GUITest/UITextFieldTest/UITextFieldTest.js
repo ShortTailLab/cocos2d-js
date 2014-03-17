@@ -25,7 +25,7 @@
 var UITextFieldEditorTest = UIBaseLayer.extend({
     ctor: function () {
         this._super();
-        var root = ccs.guiReader.widgetFromJsonFile("res/cocosgui/UIEditorTest/UITextField_Editor/ui_textfield_editor_1.json");
+        var root = ccs.uiReader.widgetFromJsonFile("res/cocosui/UIEditorTest/UITextField_Editor/ui_textfield_editor_1.json");
         this._mainNode.addChild(root);
 
         var back_label =ccui.helper.seekWidgetByName(root, "back");
@@ -42,16 +42,16 @@ var UITextFieldEditorTest = UIBaseLayer.extend({
     },
     textFieldEvent: function (sender, type) {
         switch (type) {
-            case ccui.TEXTFILE_EVENT_ATTACH_WITH_ME:
+            case ccui.TextField. EVENT_ATTACH_WITH_ME:
                 this._topDisplayText.setText("attach with IME");
                 break;
-            case ccui.TEXTFILE_EVENT_DETACH_WITH_ME:
+            case ccui.TextField. EVENT_DETACH_WITH_ME:
                 this._topDisplayText.setText("detach with IME");
                 break;
-            case ccui.TEXTFILE_EVENT_INSERT_TEXT:
+            case ccui.TextField. EVENT_INSERT_TEXT:
                 this._topDisplayText.setText("insert words");
                 break;
-            case ccui.TEXTFILE_EVENT_DELETE_BACKWARD:
+            case ccui.TextField. EVENT_DELETE_BACKWARD:
                 this._topDisplayText.setText("delete word");
                 break;
             default:

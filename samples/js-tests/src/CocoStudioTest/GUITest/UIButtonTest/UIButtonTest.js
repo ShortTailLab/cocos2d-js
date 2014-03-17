@@ -25,7 +25,7 @@
 var UIButtonEditorTest = UIBaseLayer.extend({
     ctor: function () {
         this._super();
-        var root = ccs.guiReader.widgetFromJsonFile("res/cocosgui/UIEditorTest/UIButton_Editor/UIButton_Editor_1.json");
+        var root = ccs.uiReader.widgetFromJsonFile("res/cocosui/UIEditorTest/UIButton_Editor/UIButton_Editor_1.json");
         this._mainNode.addChild(root);
 
         var back_label = ccui.helper.seekWidgetByName(root, "back");
@@ -43,19 +43,19 @@ var UIButtonEditorTest = UIBaseLayer.extend({
 
     touchEvent: function (sender, type) {
         switch (type) {
-            case ccui.TOUCH_EVENT_TYPE_BAGAN:
+            case ccui.Widget.TOUCH_BAGAN:
                 this._topDisplayText.setText("Touch Down");
                 break;
 
-            case ccui.TOUCH_EVENT_TYPE_MOVED:
+            case ccui.Widget.TOUCH_MOVED:
                 this._topDisplayText.setText("Touch Move");
                 break;
 
-            case ccui.TOUCH_EVENT_TYPE_ENDED:
+            case ccui.Widget.TOUCH_ENDED:
                 this._topDisplayText.setText("Touch Up");
                 break;
 
-            case ccui.TOUCH_EVENT_TYPE_CANCELED:
+            case ccui.Widget.TOUCH_CANCELED:
                 this._topDisplayText.setText("Touch Cancelled");
                 break;
 

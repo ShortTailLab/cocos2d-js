@@ -25,7 +25,7 @@
 var UISliderEditorTest = UIBaseLayer.extend({
     ctor: function () {
         this._super();
-        var root = ccs.guiReader.widgetFromJsonFile("res/cocosgui/UIEditorTest/UISlider_Editor/ui_slider_editor_1.json");
+        var root = ccs.uiReader.widgetFromJsonFile("res/cocosui/UIEditorTest/UISlider_Editor/ui_slider_editor_1.json");
         this._mainNode.addChild(root);
 
         var back_label =ccui.helper.seekWidgetByName(root, "back");
@@ -40,7 +40,7 @@ var UISliderEditorTest = UIBaseLayer.extend({
 
     sliderEvent: function (sender, type) {
         switch (type) {
-            case ccui.SLIDER_EVENT_PERCENT_CHANGED:
+            case ccui.Slider.EVENT_PERCENT_CHANGED:
                 var slider = sender;
                 var percent = slider.getPercent();
                 this._topDisplayText.setText("Percent " + percent.toFixed(0));

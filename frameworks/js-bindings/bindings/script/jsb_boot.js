@@ -496,7 +496,7 @@ cc.loader = {
      * @param {Function} cb     callback
      */
     loadAliases : function(url, cb){
-        cc.FileUtils.loadFilenameLookup(url);
+        cc.FileUtils.getInstance().loadFilenameLookup(url);
         if(cb) cb();
     },
 
@@ -547,13 +547,13 @@ cc.defineGetterSetter(cc.loader, "", function(){
     return this._resPath;
 }, function(resPath){
     this._resPath = resPath || "resPath";
-    cc.FileUtils.setSearchPath(this._resPath);
+    cc.FileUtils.getInstance().setSearchPath(this._resPath);
 });
 cc.defineGetterSetter(cc.loader, "audioPath", function(){
     return this._resPath;
 }, function(audioPath){
     this._audioPath = audioPath || "";
-    cc.FileUtils.setSearchPath(this._audioPath);
+    cc.FileUtils.getInstance().setSearchPath(this._audioPath);
 });
 
 //+++++++++++++++++++++++++something about loader end+++++++++++++++++++++++++++++
@@ -564,6 +564,19 @@ cc.defineGetterSetter(cc.loader, "audioPath", function(){
 cc.director = cc.Director.getInstance();
 cc.winSize = cc.director.getWinSize();
 cc.view = cc.director.getOpenGLView();
+cc.view.getDevicePixelRatio = function () {
+    var sys = cc.sys;
+    return (sys.os == sys.OS_IOS || sys.os == sys.OS_OSX) ? 2 : 1;
+};
+cc.view.enableRetina = function(enabled) {};
+cc.view.isRetinaEnabled = function() {
+    var sys = cc.sys;
+    return (sys.os == sys.OS_IOS || sys.os == sys.OS_OSX) ? true : false;
+};
+cc.view.adjustViewPort = function() {};
+cc.view.resizeWithBrowserSize = function () {return;};
+cc.view.setResizeCallback = function() {return;};
+
 cc.eventManager = cc.director.getEventDispatcher();
 cc.audioEngine = cc.AudioEngine.getInstance();
 cc.audioEngine.end = function(){
@@ -599,17 +612,17 @@ cc.screen = {
 ccui.helper = ccui.Helper;
 
 // In extension
-ccs.guiReader = ccs.GUIReader.getInstance();
+ccs.uiReader = ccs.GUIReader.getInstance();
 ccs.armatureDataManager = ccs.ArmatureDataManager.getInstance();
 ccs.actionManager = ccs.ActionManager.getInstance();
 ccs.sceneReader = ccs.SceneReader.getInstance();
 //ccs.spriteFrameCacheHelper = ccs.SpriteFrameCacheHelper.getInstance();
 //ccs.dataReaderHelper = ccs.DataReaderHelper.getInstance();
 
-ccs.sceneReader.clear = ccs.guiReader.clear = ccs.actionManager.clear = ccs.armatureDataManager.clear = function() {};
+ccs.sceneReader.clear = ccs.uiReader.clear = ccs.actionManager.clear = ccs.armatureDataManager.clear = function() {};
 ccs.sceneReader.version = function() {
     return ccs.SceneReader.sceneReaderVersion();
-}
+};
 
 //+++++++++++++++++++++++Define singleton objects end+++++++++++++++++++++++++++
 

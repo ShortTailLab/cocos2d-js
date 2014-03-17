@@ -25,7 +25,7 @@
 var UIPageViewEditorTest = UIBaseLayer.extend({
     ctor: function () {
         this._super();
-        var root = ccs.guiReader.widgetFromJsonFile("res/cocosgui/UIEditorTest/UIPageView_Editor/ui_pageview_editor_1.json");
+        var root = ccs.uiReader.widgetFromJsonFile("res/cocosui/UIEditorTest/UIPageView_Editor/ui_pageview_editor_1.json");
         this._mainNode.addChild(root);
 
         var back_label =ccui.helper.seekWidgetByName(root, "back");
@@ -37,7 +37,7 @@ var UIPageViewEditorTest = UIBaseLayer.extend({
 
     pageViewEvent: function (sender, type) {
         switch (type) {
-            case ccui.PAGEVIEW_EVENT_TURNING:
+            case ccui.PageView.EVENT_TURNING:
                 var pageView = sender;
                 this._topDisplayText.setText("page = " + (pageView.getCurPageIndex() + 1));
                 break;
