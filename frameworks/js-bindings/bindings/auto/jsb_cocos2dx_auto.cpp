@@ -41559,8 +41559,7 @@ bool js_cocos2dx_GLViewProtocol_getVisibleOrigin(JSContext *cx, uint32_t argc, j
 {
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
 	js_proxy_t *proxy = jsb_get_js_proxy(obj);
-	//cocos2d::GLViewProtocol* cobj = (cocos2d::GLViewProtocol *)(proxy ? proxy->ptr : NULL);
-    cocos2d::GLViewProtocol* cobj = dynamic_cast<cocos2d::GLViewProtocol*>(proxy ? (cocos2d::Ref*)proxy->ptr : NULL);
+	cocos2d::GLViewProtocol* cobj = (cocos2d::GLViewProtocol *)(proxy ? proxy->ptr : NULL);
 	JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_GLViewProtocol_getVisibleOrigin : Invalid Native Object");
 	if (argc == 0) {
 		cocos2d::Point ret = cobj->getVisibleOrigin();
@@ -41579,8 +41578,7 @@ bool js_cocos2dx_GLViewProtocol_setDesignResolutionSize(JSContext *cx, uint32_t 
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
 	js_proxy_t *proxy = jsb_get_js_proxy(obj);
-//	cocos2d::GLViewProtocol* cobj = (cocos2d::GLViewProtocol *)(proxy ? proxy->ptr : NULL);
-    cocos2d::GLViewProtocol* cobj = dynamic_cast<cocos2d::GLViewProtocol*>(proxy ? (cocos2d::Ref*)proxy->ptr : NULL);
+	cocos2d::GLViewProtocol* cobj = (cocos2d::GLViewProtocol *)(proxy ? proxy->ptr : NULL);
 	JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_GLViewProtocol_setDesignResolutionSize : Invalid Native Object");
 	if (argc == 3) {
 		double arg0;
@@ -41602,8 +41600,7 @@ bool js_cocos2dx_GLViewProtocol_getVisibleSize(JSContext *cx, uint32_t argc, jsv
 {
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
 	js_proxy_t *proxy = jsb_get_js_proxy(obj);
-//	cocos2d::GLViewProtocol* cobj = (cocos2d::GLViewProtocol *)(proxy ? proxy->ptr : NULL);
-    cocos2d::GLViewProtocol* cobj = dynamic_cast<cocos2d::GLViewProtocol*>(proxy ? (cocos2d::Ref*)proxy->ptr : NULL);
+	cocos2d::GLViewProtocol* cobj = (cocos2d::GLViewProtocol *)(proxy ? proxy->ptr : NULL);
 	JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_GLViewProtocol_getVisibleSize : Invalid Native Object");
 	if (argc == 0) {
 		cocos2d::Size ret = cobj->getVisibleSize();
