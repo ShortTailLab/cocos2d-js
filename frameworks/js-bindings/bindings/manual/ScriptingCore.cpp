@@ -622,10 +622,10 @@ bool ScriptingCore::runScript(const char *path, JSObject* global, JSContext* cx)
     if (cx == NULL) {
         cx = _cx;
     }
-    if (!filename_script[path])
-    {
-        compileScript(path,global,cx );
-    }
+    //if (!filename_script[path])
+    //{
+    compileScript(path,global,cx );
+    //}
     JSScript * script = filename_script[path];
     bool evaluatedOK = false;
     if (script) {
