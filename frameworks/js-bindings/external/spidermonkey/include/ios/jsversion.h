@@ -10,15 +10,15 @@
 /*
  * JS Capability Macros.
  */
-#define JS_HAS_STR_HTML_HELPERS 1       /* has str.anchor, str.bold, etc. */
+#define JS_HAS_STR_HTML_HELPERS 0       /* has str.anchor, str.bold, etc. */
 #define JS_HAS_OBJ_PROTO_PROP   1       /* has o.__proto__ etc. */
-#define JS_HAS_OBJ_WATCHPOINT   1       /* has o.watch and o.unwatch */
-#define JS_HAS_TOSOURCE         1       /* has Object/Array toSource method */
+#define JS_HAS_OBJ_WATCHPOINT   0       /* has o.watch and o.unwatch */
+#define JS_HAS_TOSOURCE         0       /* has Object/Array toSource method */
 #define JS_HAS_CATCH_GUARD      1       /* has exception handling catch guard */
 #define JS_HAS_UNEVAL           1       /* has uneval() top-level function */
 #define JS_HAS_CONST            1       /* has JS2 const as alternative var */
 #define JS_HAS_FUN_EXPR_STMT    1       /* has function expression statement */
-#define JS_HAS_NO_SUCH_METHOD   1       /* has o.__noSuchMethod__ handler */
+#define JS_HAS_NO_SUCH_METHOD   0       /* has o.__noSuchMethod__ handler */
 #define JS_HAS_FOR_EACH_IN      1       /* has for each (lhs in iterable) */
 #define JS_HAS_GENERATORS       1       /* has yield in generator function */
 #define JS_HAS_BLOCK_SCOPE      1       /* has block scope via let/arraycomp */
