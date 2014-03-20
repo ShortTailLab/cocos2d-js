@@ -467,45 +467,47 @@ cc.Sprite.create = function (fileName, rect) {
     return null;
 };
 
-cc.PhysicsSprite._create = cc.PhysicsSprite.create;
-cc.PhysicsSprite.create = function (fileName, rect) {
-    var sprite;
-    
-    if (arguments.length == 0) {
-        sprite = cc.PhysicsSprite._create();
-        return sprite;
-    }
-    
-    if (typeof(fileName) === "string") {
-        if (fileName[0] === "#") {
-            //init with a sprite frame name
-            var frameName = fileName.substr(1, fileName.length - 1);
-            var spriteFrame = cc.spriteFrameCache.getSpriteFrame(frameName);
-            sprite = cc.PhysicsSprite.createWithSpriteFrame(spriteFrame);
-        } else {
-            // Create with filename and rect
-            sprite = rect ? cc.PhysicsSprite._create(fileName, rect) : cc.PhysicsSprite._create(fileName);
-        }
-        if (sprite)
+if (cc.PhysicsSprite) {
+    cc.PhysicsSprite._create = cc.PhysicsSprite.create;
+    cc.PhysicsSprite.create = function (fileName, rect) {
+        var sprite;
+        
+        if (arguments.length == 0) {
+            sprite = cc.PhysicsSprite._create();
             return sprite;
-        else return null;
-    }
-    
-    if (typeof(fileName) === "object") {
-        if (fileName instanceof cc.Texture2D) {
-            //init  with texture and rect
-            sprite = rect ? cc.PhysicsSprite.createWithTexture(fileName, rect) : cc.PhysicsSprite.createWithTexture(fileName);
-        } else if (fileName instanceof cc.SpriteFrame) {
-            //init with a sprite frame
-            sprite = cc.PhysicsSprite.createWithSpriteFrame(fileName)
         }
-        if (sprite)
-            return  sprite;
-        else return null;
-    }
-    
-    return null;
-};
+        
+        if (typeof(fileName) === "string") {
+            if (fileName[0] === "#") {
+                //init with a sprite frame name
+                var frameName = fileName.substr(1, fileName.length - 1);
+                var spriteFrame = cc.spriteFrameCache.getSpriteFrame(frameName);
+                sprite = cc.PhysicsSprite.createWithSpriteFrame(spriteFrame);
+            } else {
+                // Create with filename and rect
+                sprite = rect ? cc.PhysicsSprite._create(fileName, rect) : cc.PhysicsSprite._create(fileName);
+            }
+            if (sprite)
+                return sprite;
+            else return null;
+        }
+        
+        if (typeof(fileName) === "object") {
+            if (fileName instanceof cc.Texture2D) {
+                //init  with texture and rect
+                sprite = rect ? cc.PhysicsSprite.createWithTexture(fileName, rect) : cc.PhysicsSprite.createWithTexture(fileName);
+            } else if (fileName instanceof cc.SpriteFrame) {
+                //init with a sprite frame
+                sprite = cc.PhysicsSprite.createWithSpriteFrame(fileName)
+            }
+            if (sprite)
+                return  sprite;
+            else return null;
+        }
+        
+        return null;
+    };
+}
 
 
 cc.LabelTTF._create = cc.LabelTTF.create;

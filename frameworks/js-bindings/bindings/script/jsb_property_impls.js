@@ -108,14 +108,16 @@ _safeExtend(cc.Sprite.prototype, {
     }
 });
 
-_safeExtend(cc.PhysicsSprite.prototype, {
-    setPositionX: function(x) {
-        this.setPosition( cc.p(x, this.getPositionY()) );
-    },
-    setPositionY: function(y) {
-        this.setPosition( cc.p(this.getPositionX(), y) );
-    }
-});
+if (cc.PhysicsSprite) {
+    _safeExtend(cc.PhysicsSprite.prototype, {
+        setPositionX: function(x) {
+            this.setPosition( cc.p(x, this.getPositionY()) );
+        },
+        setPositionY: function(y) {
+            this.setPosition( cc.p(this.getPositionX(), y) );
+        }
+    });
+}
 
 _safeExtend(cc.LabelBMFont.prototype, {
     _getAlignment: _undefined._jsbUndefined,

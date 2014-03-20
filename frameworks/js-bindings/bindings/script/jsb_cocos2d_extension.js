@@ -154,30 +154,36 @@ cc.CONTROL_STATE_SELECTED = 1 << 3;  // Selected state of a control. This state 
 cc.CONTROL_STATE_INITIAL = 1 << 3;
 
 // PhysicsDebugNode
-cc.PhysicsDebugNode.create = function( space ) {
-    var s = space;
-    if( space.handle !== undefined )
-        s = space.handle;
-    return cc.PhysicsDebugNode._create( s );
-};
-cc.PhysicsDebugNode.prototype.setSpace = function( space ) {
-    var s = space;
-    if( space.handle !== undefined )
-        s = space.handle;
-    return this._setSpace( s );
-};
+if (cc.PhysicsDebugNode) {
+    cc.PhysicsDebugNode.create = function( space ) {
+        var s = space;
+        if( space.handle !== undefined )
+            s = space.handle;
+        return cc.PhysicsDebugNode._create( s );
+    };
+    cc.PhysicsDebugNode.prototype.setSpace = function( space ) {
+        var s = space;
+        if( space.handle !== undefined )
+            s = space.handle;
+        return this._setSpace( s );
+    };
+}
 
 // PhysicsSprite
-cc.PhysicsSprite.prototype.setBody = function( body ) {
-    var b = body;
-    if( body.handle !== undefined )
-        b = body.handle;
-    return this._setCPBody( b );
-};
+if (cc.PhysicsSprite) {
+    cc.PhysicsSprite.prototype.setBody = function( body ) {
+        var b = body;
+        if( body.handle !== undefined )
+            b = body.handle;
+        return this._setCPBody( b );
+    };
+}
 
-cc.PhysicsSprite.prototype.getBody = function() {
-    return this.getCPBody();
-};
+if (cc.PhysicsSprite) {
+    cc.PhysicsSprite.prototype.getBody = function() {
+        return this.getCPBody();
+    };
+}
 
 cc.ScrollView.extend = cc.Class.extend;
 cc.TableView.extend = cc.Class.extend;
