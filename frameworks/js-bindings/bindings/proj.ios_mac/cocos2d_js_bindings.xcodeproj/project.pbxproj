@@ -135,6 +135,7 @@
 		1AB5E63418D05BF30088DAA4 /* jsb_cocos2dx_ui_manual.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AB5E63118D05BF30088DAA4 /* jsb_cocos2dx_ui_manual.cpp */; };
 		1AB5E63518D05BF30088DAA4 /* jsb_cocos2dx_ui_manual.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB5E63218D05BF30088DAA4 /* jsb_cocos2dx_ui_manual.h */; };
 		1AB5E63618D05BF30088DAA4 /* jsb_cocos2dx_ui_manual.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB5E63218D05BF30088DAA4 /* jsb_cocos2dx_ui_manual.h */; };
+		E459EC7418D8B6F9002EF4FE /* libnspr4.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E459EC7318D8B6F9002EF4FE /* libnspr4.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -212,6 +213,7 @@
 		1AB5E62A18D05BC80088DAA4 /* jsb_cocos2dx_ui_auto.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsb_cocos2dx_ui_auto.hpp; sourceTree = "<group>"; };
 		1AB5E63118D05BF30088DAA4 /* jsb_cocos2dx_ui_manual.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsb_cocos2dx_ui_manual.cpp; sourceTree = "<group>"; };
 		1AB5E63218D05BF30088DAA4 /* jsb_cocos2dx_ui_manual.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jsb_cocos2dx_ui_manual.h; sourceTree = "<group>"; };
+		E459EC7318D8B6F9002EF4FE /* libnspr4.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libnspr4.a; path = ../../external/spidermonkey/prebuilt/ios/libnspr4.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -228,6 +230,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A119F0E18BDF1FF00352BAA /* libjs_static.a in Frameworks */,
+				E459EC7418D8B6F9002EF4FE /* libnspr4.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,6 +240,7 @@
 		1551A334158F2AB200E66CFE = {
 			isa = PBXGroup;
 			children = (
+				E459EC7318D8B6F9002EF4FE /* libnspr4.a */,
 				1A119E2E18BDF19200352BAA /* auto */,
 				1A119F0918BDF1D400352BAA /* external */,
 				1A5410A518B785A10016A3AF /* libjsbindings iOS.a */,
@@ -780,6 +784,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../external/spidermonkey/prebuilt/ios",
+					"/Users/colprog/Documents/Dev/STL/dagger/external/cocos2d-js/frameworks/js-bindings/external/spidermonkey/prebuilt/ios",
 				);
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -802,6 +807,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../external/spidermonkey/prebuilt/ios",
+					"/Users/colprog/Documents/Dev/STL/dagger/external/cocos2d-js/frameworks/js-bindings/external/spidermonkey/prebuilt/ios",
 				);
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
