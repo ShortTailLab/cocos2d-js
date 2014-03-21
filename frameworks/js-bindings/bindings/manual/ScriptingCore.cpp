@@ -515,17 +515,13 @@ void ScriptingCore::createGlobalContext() {
     JS_SetNativeStackQuota(_rt, JSB_MAX_STACK_QUOTA);
     
     this->_cx = JS_NewContext(_rt, 8192);
-    
-    // Removed in Firefox v27
-//    JS_SetOptions(this->_cx, JSOPTION_TYPE_INFERENCE);
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
     JS::ContextOptionsRef(_cx).setTypeInference(true);
-    
-//    JS_SetVersion(this->_cx, JSVERSION_LATEST);
-    
-    // Only disable METHODJIT on iOS.
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-//    JS_SetOptions(this->_cx, JS_GetOptions(this->_cx) & ~JSOPTION_METHODJIT);
-//    JS_SetOptions(this->_cx, JS_GetOptions(this->_cx) & ~JSOPTION_METHODJIT_ALWAYS);
+    JS_SetGlobalJitCompilerOption(_cx, JSJITCOMPILER_ION_ENABLE, 1);
+    JS_SetGlobalJitCompilerOption(_cx, JSJITCOMPILER_BASELINE_ENABLE, 1);
+    JS_SetGlobalJitCompilerOption(_cx, JSJITCOMPILER_BASELINE_USECOUNT_TRIGGER, 10);
+    JS_SetGlobalJitCompilerOption(_cx, JSJITCOMPILER_ION_USECOUNT_TRIGGER, 100);
 #endif
     
     JS_SetErrorReporter(this->_cx, ScriptingCore::reportError);
