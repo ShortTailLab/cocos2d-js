@@ -195,6 +195,7 @@ _safeExtend(cc.TMXTiledMap.prototype, {
     }
 });
 
+if (sys.ccui) {
 _safeExtend(ccui.Widget.prototype, {
     _getXPercent: function() {
         return this.getPositionPercent().x;
@@ -310,3 +311,4 @@ _safeExtend(ccui.ScrollView.prototype, {
 //         }
 //     }
 // });
+}

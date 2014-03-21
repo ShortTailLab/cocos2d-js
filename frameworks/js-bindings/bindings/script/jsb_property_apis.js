@@ -90,11 +90,14 @@ cc.defineGetterSetter(_proto, "color", _proto.getColor, _proto.setColor);
 _proto = cc.TextFieldTTF.prototype;
 cc.defineGetterSetter(_proto, "string", _proto.getString, _proto.setString);
 
+if (sys.ccs) {
 _proto = ccs.Bone.prototype;
 cc.defineGetterSetter(_proto, "color", _proto.getColor, _proto.setColor);
 cc.defineGetterSetter(_proto, "opacity", _proto.getOpacity, _proto.setOpacity);
 cc.defineGetterSetter(_proto, "zIndex", _proto.getLocalZOrder, _proto.setLocalZOrder);
+}
 
+if (sys.ccui) {
 _proto = ccui.Widget.prototype;
 cc.defineGetterSetter(_proto, "x", _proto.getPositionX, _proto.setPositionX);
 cc.defineGetterSetter(_proto, "y", _proto.getPositionY, _proto.setPositionY);
@@ -172,6 +175,7 @@ cc.defineGetterSetter(_proto, "height", _proto._getHeight, _proto._setHeight);
 cc.defineGetterSetter(_proto, "anchorX", _proto._getAnchorX, _proto._setAnchorX);
 cc.defineGetterSetter(_proto, "anchorY", _proto._getAnchorY, _proto._setAnchorY);
 */
+}
 
 _proto = cc.Control.prototype;
 cc.defineGetterSetter(_proto, "opacityModifyRGB", _proto.isOpacityModifyRGB, _proto.setOpacityModifyRGB);
@@ -454,6 +458,7 @@ cc.defineGetterSetter(_proto, "mapHeight", _proto._getMapHeight, _proto._setMapH
 cc.defineGetterSetter(_proto, "tileWidth", _proto._getTileWidth, _proto._setTileWidth);
 cc.defineGetterSetter(_proto, "tileHeight", _proto._getTileHeight, _proto._setTileHeight);
 
+if (sys.ccs) {
 _proto = ccs.Armature.prototype;
 cc.defineGetterSetter(_proto, "parentBone", _proto.getParentBone, _proto.setParentBone);
 cc.defineGetterSetter(_proto, "animation", _proto.getAnimation, _proto.setAnimation);
@@ -488,7 +493,9 @@ _proto = ccs.ColliderDetector.prototype;
 cc.defineGetterSetter(_proto, "colliderFilter", _proto.getColliderFilter, _proto.setColliderFilter);
 cc.defineGetterSetter(_proto, "active", _proto.getActive, _proto.setActive);
 cc.defineGetterSetter(_proto, "body", _proto.getBody, _proto.setBody);
+}
 
+if (sys.ccui) {
 _proto = ccui.Widget.prototype;
 cc.defineGetterSetter(_proto, "xPercent", _proto._getXPercent, _proto._setXPercent);
 cc.defineGetterSetter(_proto, "yPercent", _proto._getYPercent, _proto._setYPercent);
@@ -560,6 +567,7 @@ cc.defineGetterSetter(_proto, "innerWidth", _proto._getInnerWidth, _proto._setIn
 cc.defineGetterSetter(_proto, "innerHeight", _proto._getInnerHeight, _proto._setInnerHeight);
 cc.defineGetterSetter(_proto, "bounceEnabled", _proto.getBounceEnabled, _proto.setBounceEnabled);
 cc.defineGetterSetter(_proto, "inertiaScrollEnabled", _proto.getInertiaScrollEnabled, _proto.setInertiaScrollEnabled);
+}
 
 _proto = cc.EditBox.prototype;
 cc.defineGetterSetter(_proto, "font", null, _proto._setFont);

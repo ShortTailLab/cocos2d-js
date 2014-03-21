@@ -609,20 +609,24 @@ cc.screen = {
 };
 
 // GUI
-ccui.helper = ccui.Helper;
+if (sys.ccui) {
+    ccui.helper = ccui.Helper;
+}
 
 // In extension
-ccs.uiReader = ccs.GUIReader.getInstance();
-ccs.armatureDataManager = ccs.ArmatureDataManager.getInstance();
-ccs.actionManager = ccs.ActionManager.getInstance();
-ccs.sceneReader = ccs.SceneReader.getInstance();
-//ccs.spriteFrameCacheHelper = ccs.SpriteFrameCacheHelper.getInstance();
-//ccs.dataReaderHelper = ccs.DataReaderHelper.getInstance();
+if (sys.ccs) {
+    ccs.uiReader = ccs.GUIReader.getInstance();
+    ccs.armatureDataManager = ccs.ArmatureDataManager.getInstance();
+    ccs.actionManager = ccs.ActionManager.getInstance();
+    ccs.sceneReader = ccs.SceneReader.getInstance();
+    //ccs.spriteFrameCacheHelper = ccs.SpriteFrameCacheHelper.getInstance();
+    //ccs.dataReaderHelper = ccs.DataReaderHelper.getInstance();
 
-ccs.sceneReader.clear = ccs.uiReader.clear = ccs.actionManager.clear = ccs.armatureDataManager.clear = function() {};
-ccs.sceneReader.version = function() {
-    return ccs.SceneReader.sceneReaderVersion();
-};
+    ccs.sceneReader.clear = ccs.uiReader.clear = ccs.actionManager.clear = ccs.armatureDataManager.clear = function() {};
+    ccs.sceneReader.version = function() {
+        return ccs.SceneReader.sceneReaderVersion();
+    };
+}
 
 //+++++++++++++++++++++++Define singleton objects end+++++++++++++++++++++++++++
 
