@@ -520,9 +520,10 @@ void ScriptingCore::createGlobalContext() {
     JS::ContextOptionsRef(_cx).setTypeInference(true);
     JS_SetGlobalJitCompilerOption(_cx, JSJITCOMPILER_ION_ENABLE, 1);
     JS_SetGlobalJitCompilerOption(_cx, JSJITCOMPILER_BASELINE_ENABLE, 1);
-    JS_SetGlobalJitCompilerOption(_cx, JSJITCOMPILER_BASELINE_USECOUNT_TRIGGER, 10);
-    JS_SetGlobalJitCompilerOption(_cx, JSJITCOMPILER_ION_USECOUNT_TRIGGER, 100);
+    JS_SetGlobalJitCompilerOption(_cx, JSJITCOMPILER_BASELINE_USECOUNT_TRIGGER, 0);
 #endif
+    JS_SetParallelIonCompilationEnabled(_cx, true);
+    JS_SetParallelParsingEnabled(_cx, true);
     
     JS_SetErrorReporter(this->_cx, ScriptingCore::reportError);
 #if defined(JS_GC_ZEAL) && defined(DEBUG)
