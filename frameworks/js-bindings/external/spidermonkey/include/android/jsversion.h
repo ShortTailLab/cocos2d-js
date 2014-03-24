@@ -15,7 +15,7 @@
 #define JS_HAS_OBJ_WATCHPOINT   0       /* has o.watch and o.unwatch */
 #define JS_HAS_TOSOURCE         0       /* has Object/Array toSource method */
 #define JS_HAS_CATCH_GUARD      1       /* has exception handling catch guard */
-#define JS_HAS_UNEVAL           0       /* has uneval() top-level function */
+#define JS_HAS_UNEVAL           1       /* has uneval() top-level function */
 #define JS_HAS_CONST            1       /* has JS2 const as alternative var */
 #define JS_HAS_FUN_EXPR_STMT    1       /* has function expression statement */
 #define JS_HAS_NO_SUCH_METHOD   0       /* has o.__noSuchMethod__ handler */
