@@ -118,6 +118,10 @@ cc._reuse_color4b = {r:255, g:255, b:255, a:255 };
 //
 cc.p = function( x, y )
 {
+    if (x == undefined)
+        return {x: 0, y: 0};
+    if (y == undefined)
+        return {x: x.x, y: x.y};
     return {x:x, y:y};
 };
 cc._p = function( x, y )
@@ -595,6 +599,7 @@ cc.MenuItemFont.extend = cc.Class.extend;
 cc.MenuItemToggle.extend = cc.Class.extend;
 cc.Scene.extend = cc.Class.extend;
 cc.DrawNode.extend = cc.Class.extend;
+cc.Component.extend = cc.Class.extend;
 
 // Cocos2d-html5 supports multi scene resources preloading.
 // This is a compatible function for JSB.
@@ -646,7 +651,7 @@ var WindowTimeFun = cc.Class.extend({
             Function(code)();
         }
         else if (typeof code == "function") {
-            code();
+            code.apply(null, this._args);
         }
     }
 });
@@ -659,6 +664,8 @@ var WindowTimeFun = cc.Class.extend({
  */
 var setTimeout = function (code, delay) {
     var target = new WindowTimeFun(code);
+    if (arguments.length > 2)
+        target._args = Array.prototype.slice.call(arguments, 2);
     cc.Director.getInstance().getScheduler().scheduleCallbackForTarget(target, target.fun, delay / 1000, 0, 0, false);
     _windowTimeFunHash[target._intervalId] = target;
     return target._intervalId;
@@ -672,6 +679,8 @@ var setTimeout = function (code, delay) {
  */
 var setInterval = function (code, delay) {
     var target = new WindowTimeFun(code);
+    if (arguments.length > 2)
+        target._args = Array.prototype.slice.call(arguments, 2);
     cc.Director.getInstance().getScheduler().scheduleCallbackForTarget(target, target.fun, delay / 1000, cc.REPEAT_FOREVER, 0, false);
     _windowTimeFunHash[target._intervalId] = target;
     return target._intervalId;
