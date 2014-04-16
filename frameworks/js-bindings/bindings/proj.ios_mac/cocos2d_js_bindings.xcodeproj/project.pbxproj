@@ -220,6 +220,7 @@
 		E459EC7318D8B6F9002EF4FE /* libnspr4.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libnspr4.a; path = ../../external/spidermonkey/prebuilt/ios/libnspr4.a; sourceTree = "<group>"; };
 		83A5661718DA878400FC31A0 /* jsb_socketio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsb_socketio.cpp; sourceTree = "<group>"; };
 		83A5661818DA878400FC31A0 /* jsb_socketio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jsb_socketio.h; sourceTree = "<group>"; };
+		BA86F5EF18FBB75600334DC7 /* libjs_static.arm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libjs_static.arm64.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -419,6 +420,7 @@
 			isa = PBXGroup;
 			children = (
 				1A119F0D18BDF1FF00352BAA /* libjs_static.a */,
+				BA86F5EF18FBB75600334DC7 /* libjs_static.arm64.a */,
 			);
 			name = ios;
 			sourceTree = "<group>";
@@ -798,6 +800,7 @@
 					"$(SRCROOT)/../../external/spidermonkey/prebuilt/ios",
 					"/Users/colprog/Documents/Dev/STL/dagger/external/cocos2d-js/frameworks/js-bindings/external/spidermonkey/prebuilt/ios",
 				);
+				"OTHER_LDFLAGS[arch=arm64]" = "-ljs_static.arm64";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../../external/spidermonkey/include/ios $(SRCROOT)/../../cocos2d-x/cocos/2d/platform/ios";
@@ -821,6 +824,7 @@
 					"$(SRCROOT)/../../external/spidermonkey/prebuilt/ios",
 					"/Users/colprog/Documents/Dev/STL/dagger/external/cocos2d-js/frameworks/js-bindings/external/spidermonkey/prebuilt/ios",
 				);
+				"OTHER_LDFLAGS[arch=arm64]" = "-ljs_static.arm64";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../../external/spidermonkey/include/ios $(SRCROOT)/../../cocos2d-x/cocos/2d/platform/ios";

@@ -3,6 +3,10 @@ function _safeExtend(obj, list) {
         if(!obj[key])
             obj[key] = list[key];
 }
+function _forceExtend(obj, list) {
+    for (var key in list)
+        obj[key] = list[key];
+}
 
 function _customUndefined(message) {
     return function() {
@@ -196,7 +200,8 @@ _safeExtend(cc.TMXTiledMap.prototype, {
 });
 
 if (sys.ccui) {
-_safeExtend(ccui.Widget.prototype, {
+// Override width and height getter setter
+_forceExtend(ccui.Widget.prototype, {
     _getXPercent: function() {
         return this.getPositionPercent().x;
     },
@@ -213,6 +218,12 @@ _safeExtend(ccui.Widget.prototype, {
         this.setPositionPercent(p);
     },
 
+    _getWidth: function() {
+        return this.getSize().width;
+    },
+    _getHeight: function() {
+        return this.getSize().height;
+    },
     _getWidthPercent: function() {
         return this.getSizePercent().width;
     },
@@ -220,6 +231,14 @@ _safeExtend(ccui.Widget.prototype, {
         return this.getSizePercent().height;
     },
 
+    _setWidth: function(w) {
+        var size = cc.size(w, this.getSize().height);
+        this.isIgnoreContentAdaptWithSize() ? this.setContentSize(size) : this.setSize(size);
+    },
+    _setHeight: function(h) {
+        var size = cc.size(this.getSize().width, h);
+        this.isIgnoreContentAdaptWithSize() ? this.setContentSize(size) : this.setSize(size);
+    },
     _setWidthPercent: function(w) {
         var size = cc.size(w, this.getSizePercent().height);
         this.setSizePercent(size);
