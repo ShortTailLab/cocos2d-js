@@ -1363,7 +1363,9 @@ cc.TiledGrid3D.extend = cc.Class.extend;
 cc.MotionStreak.extend = cc.Class.extend;
 cc.ParticleBatchNode.extend = cc.Class.extend;
 cc.ParticleSystem.extend = cc.Class.extend;
+if (cc.PhysicsSprite) {
 cc.PhysicsSprite.extend = cc.Class.extend;
+}
 cc.TextFieldTTF.extend = cc.Class.extend;
 cc.RenderTexture.extend = cc.Class.extend;
 cc.TileMapAtlas.extend = cc.Class.extend;

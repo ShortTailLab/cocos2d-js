@@ -268,6 +268,7 @@ _p._ctor = function(plistFile){
 };
 
 /************************  PhysicsSprite  *************************/
+if (cc.PhysicsSprite) {
 _p = cc.PhysicsSprite.prototype;
 _p._ctor = function(fileName, rect){
     if (fileName === undefined) {
@@ -295,6 +296,7 @@ _p._ctor = function(fileName, rect){
         }
     }
 };
+}
 
 /************************  TextFieldTTF  *************************/
 _p = cc.TextFieldTTF.prototype;
