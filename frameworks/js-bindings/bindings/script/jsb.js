@@ -28,7 +28,7 @@
 executeScript('jsb_cocos2d_constants.js');
 executeScript('jsb_cocos2d.js');
 executeScript('jsb_cocos2d_extension.js');
-//executeScript('jsb_cocos2d_studio.js');
+executeScript('jsb_cocos2d_studio.js');
 //executeScript('jsb_cocos2d_ui.js');
 executeScript('jsb_property_impls.js');
 executeScript('jsb_property_apis.js');
