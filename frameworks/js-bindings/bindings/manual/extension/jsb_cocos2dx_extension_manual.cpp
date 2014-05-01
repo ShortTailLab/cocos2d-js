@@ -443,7 +443,7 @@ static bool js_cocos2dx_CCTableView_create(JSContext *cx, uint32_t argc, jsval *
 {
     jsval *argv = JS_ARGV(cx, vp);
     bool ok = true;
-    if (argc == 3 || argc == 2)
+    if (argc == 3 || argc == 2 || argc == 4)
     {
         
         JSB_TableViewDataSource* pNativeSource = new JSB_TableViewDataSource();
@@ -483,9 +483,14 @@ static bool js_cocos2dx_CCTableView_create(JSContext *cx, uint32_t argc, jsval *
                 JSObject *tmpObj = JSVAL_TO_OBJECT(argv[2]);
                 proxy = jsb_get_js_proxy(tmpObj);
                 arg2 = (cocos2d::Node*)(proxy ? proxy->ptr : NULL);
-                JSB_PRECONDITION2( arg2, cx, false, "Invalid Native Object");
+//                JSB_PRECONDITION2( arg2, cx, false, "Invalid Native Object");
             } while (0);
             JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
+            if (argc == 4) {
+                bool arg3;
+                arg3 = JSVAL_TO_BOOLEAN(argv[3]);
+                ret->setFixedTouchPriority(arg3);
+            }
             ret->initWithViewSize(arg1, arg2);
         }
         ret->reloadData();
