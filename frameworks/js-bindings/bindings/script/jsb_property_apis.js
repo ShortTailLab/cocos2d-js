@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2014 Chukong Technologies Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 /**
  *  <p>Properties configuration function </br>
  *  All properties in attrs will be set to the node, </br>
@@ -12,8 +34,11 @@ cc.Node.prototype.attr = function(attrs) {
 	}
 };
 
+var _proto = cc.Action.prototype;
+cc.defineGetterSetter(_proto, "tag", _proto.getTag, _proto.setTag);
+
 // Overrides
-var _proto = cc.AtlasNode.prototype;
+_proto = cc.AtlasNode.prototype;
 cc.defineGetterSetter(_proto, "opacity", _proto.getOpacity, _proto.setOpacity);
 cc.defineGetterSetter(_proto, "opacityModifyRGB", _proto.isOpacityModifyRGB, _proto.setOpacityModifyRGB);
 cc.defineGetterSetter(_proto, "color", _proto.getColor, _proto.setColor);
@@ -101,8 +126,8 @@ if (sys.ccui) {
 _proto = ccui.Widget.prototype;
 cc.defineGetterSetter(_proto, "x", _proto.getPositionX, _proto.setPositionX);
 cc.defineGetterSetter(_proto, "y", _proto.getPositionY, _proto.setPositionY);
-//cc.defineGetterSetter(_proto, "width", _proto._getWidth, _proto._setWidth);
-//cc.defineGetterSetter(_proto, "height", _proto._getHeight, _proto._setHeight);
+cc.defineGetterSetter(_proto, "width", _proto._getWidth, _proto._setWidth);
+cc.defineGetterSetter(_proto, "height", _proto._getHeight, _proto._setHeight);
 cc.defineGetterSetter(_proto, "flippedX", _proto.isFlippedX, _proto.setFlippedX);
 cc.defineGetterSetter(_proto, "flippedY", _proto.isFlippedY, _proto.setFlippedY);
 cc.defineGetterSetter(_proto, "children", _proto.getChildren);
@@ -114,8 +139,6 @@ cc.defineGetterSetter(_proto, "childrenCount", _proto.getChildrenCount);
 cc.defineGetterSetter(_proto, "layoutType", _proto.getLayoutType, _proto.setLayoutType);
 
 _proto = ccui.Button.prototype;
-//cc.defineGetterSetter(_proto, "width", _proto._getWidth, _proto._setWidth);
-//cc.defineGetterSetter(_proto, "height", _proto._getHeight, _proto._setHeight);
 //cc.defineGetterSetter(_proto, "anchorX", _proto._getAnchorX, _proto._setAnchorX);
 //cc.defineGetterSetter(_proto, "anchorY", _proto._getAnchorY, _proto._setAnchorY);
 cc.defineGetterSetter(_proto, "flippedX", _proto.isFlippedX, _proto.setFlippedX);
@@ -518,6 +541,8 @@ cc.defineGetterSetter(_proto, "clippingType", _proto.setClippingType);
 cc.defineGetterSetter(_proto, "layoutType", _proto.getLayoutType, _proto.setLayoutType);
 
 _proto = ccui.Button.prototype;
+cc.defineGetterSetter(_proto, "width", _proto._getWidth, _proto._setWidth);
+cc.defineGetterSetter(_proto, "height", _proto._getHeight, _proto._setHeight);
 cc.defineGetterSetter(_proto, "titleText", _proto.getTitleText, _proto.setTitleText);
 cc.defineGetterSetter(_proto, "titleFont", _proto._getTitleFont, _proto._setTitleFont);
 cc.defineGetterSetter(_proto, "titleFontSize", _proto.getTitleFontSize, _proto.setTitleFontSize);

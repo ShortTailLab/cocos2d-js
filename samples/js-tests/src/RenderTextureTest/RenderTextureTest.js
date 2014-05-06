@@ -1,8 +1,7 @@
 /****************************************************************************
-
- http://www.cocos2d-html5.org
- http://www.cocos2d-iphone.org
- http://www.cocos2d-x.org
+ Copyright (c) 2008-2010 Ricardo Quesada
+ Copyright (c) 2011-2012 cocos2d-x.org
+ Copyright (c) 2013-2014 Chukong Technologies Inc.
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -97,7 +96,8 @@ var RenderTextureSave = RenderTextureBaseLayer.extend({
                     event.getCurrentTarget()._lastLocation = event.getLocation();
                 },
                 onMouseMove: function(event){
-                    event.getCurrentTarget().drawInLocation(event.getLocation());
+                    if(event.getButton() != undefined)
+                        event.getCurrentTarget().drawInLocation(event.getLocation());
                 }
             }, this);
 

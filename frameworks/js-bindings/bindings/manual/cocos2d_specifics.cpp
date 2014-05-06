@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2012 Zynga Inc.
+ * Copyright (c) 2013-2014 Chukong Technologies Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include "cocos2d_specifics.hpp"
 #include "cocos2d.h"
 #include <typeinfo>
@@ -692,6 +715,24 @@ bool js_cocos2dx_CCAnimation_create(JSContext *cx, uint32_t argc, jsval *vp)
 	return false;
 }
 
+bool js_cocos2dx_CCScene_init(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	cocos2d::Scene* cobj = (cocos2d::Scene *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_Scene_init : Invalid Native Object");
+	if (argc == 0) {
+		bool ret = cobj->init();
+		jsval jsret = JSVAL_NULL;
+		jsret = BOOLEAN_TO_JSVAL(ret);
+		JS_SET_RVAL(cx, vp, jsret);
+		return true;
+	}
+    
+	JS_ReportError(cx, "js_cocos2dx_Scene_init : wrong number of arguments: %d, was expecting %d", argc, 0);
+	return false;
+}
+
 bool js_cocos2dx_CCLayerMultiplex_create(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	jsval *argv = JS_ARGV(cx, vp);
@@ -818,6 +859,7 @@ JSObject* getObjectFromNamespace(JSContext* cx, JSObject *ns, const char *name) 
 
 jsval anonEvaluate(JSContext *cx, JSObject *thisObj, const char* string) {
 	jsval out;
+	JSB_AUTOCOMPARTMENT_WITH_GLOBAL_OBJCET
 	if (JS_EvaluateScript(cx, thisObj, string, strlen(string), "(string)", 1, &out) == true) {
 		return out;
 	}
@@ -942,6 +984,77 @@ static bool js_callFunc(JSContext *cx, uint32_t argc, jsval *vp)
 //        }
         
       //  test->execute();
+        return true;
+    }
+    JS_ReportError(cx, "Invalid number of arguments");
+    return false;
+}
+
+// callFunc.initWithFunction( func, this, [data])
+// callFunc.initWithFunction( func )
+bool js_cocos2dx_CallFunc_initWithFunction(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    if (argc >= 1 && argc <= 3) {
+        JSObject *obj = JS_THIS_OBJECT(cx, vp);
+		js_proxy_t *proxy = jsb_get_js_proxy(obj);
+		CallFuncN *action = (cocos2d::CallFuncN *)(proxy ? proxy->ptr : NULL);
+        JSB_PRECONDITION2(action, cx, false, "Invalid Native Object");
+        
+		jsval *argv = JS_ARGV(cx, vp);
+        
+        std::shared_ptr<JSCallbackWrapper> tmpCobj(new JSCallbackWrapper());
+        
+        tmpCobj->setJSCallbackFunc(argv[0]);
+        if(argc >= 2) {
+            tmpCobj->setJSCallbackThis(argv[1]);
+        } if(argc == 3) {
+            tmpCobj->setJSExtraData(argv[2]);
+        }
+        
+        action->initWithFunction([=](Node* sender){
+            const jsval& jsvalThis = tmpCobj->getJSCallbackThis();
+            const jsval& jsvalCallback = tmpCobj->getJSCallbackFunc();
+            const jsval& jsvalExtraData = tmpCobj->getJSExtraData();
+            
+            bool hasExtraData = !JSVAL_IS_VOID(jsvalExtraData);
+            JSObject* thisObj = JSVAL_IS_VOID(jsvalThis) ? nullptr : JSVAL_TO_OBJECT(jsvalThis);
+            
+            JSB_AUTOCOMPARTMENT_WITH_GLOBAL_OBJCET
+            
+            js_proxy_t *proxy = js_get_or_create_proxy<cocos2d::Node>(cx, sender);
+            
+            jsval retval;
+            if(jsvalCallback != JSVAL_VOID)
+            {
+                if (hasExtraData)
+                {
+                    jsval valArr[2];
+                    valArr[0] = OBJECT_TO_JSVAL(proxy->obj);
+                    valArr[1] = jsvalExtraData;
+                    
+                    JS_AddValueRoot(cx, valArr);
+                    JS_CallFunctionValue(cx, thisObj, jsvalCallback, 2, valArr, &retval);
+                    JS_RemoveValueRoot(cx, valArr);
+                }
+                else
+                {
+                    jsval senderVal = OBJECT_TO_JSVAL(proxy->obj);
+                    JS_AddValueRoot(cx, &senderVal);
+                    JS_CallFunctionValue(cx, thisObj, jsvalCallback, 1, &senderVal, &retval);
+                    JS_RemoveValueRoot(cx, &senderVal);
+                }
+            }
+            
+            // I think the JSCallFuncWrapper isn't needed.
+            // Since an action will be run by a cc.Node, it will be released at the Node::cleanup.
+            // By James Chen
+            // JSCallFuncWrapper::setTargetForNativeNode(node, (JSCallFuncWrapper *)this);
+        });
+        
+		JS_SetReservedSlot(proxy->obj, 0, argv[0]);
+        if(argc > 1) {
+            JS_SetReservedSlot(proxy->obj, 1, argv[1]);
+        }
         return true;
     }
     JS_ReportError(cx, "Invalid number of arguments");
@@ -1788,7 +1901,7 @@ bool js_CCScheduler_scheduleUpdateForTarget(JSContext *cx, uint32_t argc, jsval 
         bool paused = false;
         
         if( argc >= 3 ) {
-            ok &= JS_ValueToBoolean(cx,  argv[2], &paused);
+            paused = JS::ToBoolean(JS::RootedValue(cx, argv[2]));
         }
         
         JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
@@ -1909,7 +2022,7 @@ bool js_CCScheduler_schedule(JSContext *cx, uint32_t argc, jsval *vp)
         bool paused = false;
         
         if( argc >= 6 ) {
-            ok &= JS_ValueToBoolean(cx,  argv[5], &paused);
+            paused = JS::ToBoolean(JS::RootedValue(cx,  argv[5]));
         }
         
         JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
@@ -2327,6 +2440,36 @@ bool js_cocos2dx_CCNode_setColor(JSContext *cx, uint32_t argc, jsval *vp)
 	}
     
 	JS_ReportError(cx, "js_cocos2dx_Node_setColor : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
+}
+
+bool js_cocos2dx_Component_onEnter(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	JSObject *thisObj = JS_THIS_OBJECT(cx, vp);
+	if (thisObj) {
+		js_proxy_t *proxy = jsb_get_js_proxy(thisObj);
+		if (proxy) {
+            ScriptingCore::getInstance()->setCalledFromScript(true);
+			static_cast<Component*>(proxy->ptr)->onEnter();
+			return true;
+		}
+	}
+    JS_ReportError(cx, "Invalid Native Object.");
+	return false;
+}
+
+bool js_cocos2dx_Component_onExit(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	JSObject *thisObj = JS_THIS_OBJECT(cx, vp);
+	if (thisObj) {
+		js_proxy_t *proxy = jsb_get_js_proxy(thisObj);
+		if (proxy) {
+            ScriptingCore::getInstance()->setCalledFromScript(true);
+			static_cast<Component*>(proxy->ptr)->onExit();
+			return true;
+		}
+	}
+    JS_ReportError(cx, "Invalid Native Object.");
 	return false;
 }
 
@@ -3018,6 +3161,24 @@ bool js_cocos2dx_CCParticleSystem_setBlendFunc(JSContext *cx, uint32_t argc, jsv
 bool js_cocos2dx_CCDrawNode_setBlendFunc(JSContext *cx, uint32_t argc, jsval *vp)
 {
     return js_cocos2dx_setBlendFunc<DrawNode>(cx, argc, vp);
+}
+
+bool js_cocos2dx_CCSprite_textureLoaded(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JSObject *obj;
+    Sprite* cobj;
+    obj = JS_THIS_OBJECT(cx, vp);
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cobj = (Sprite*)(proxy ? proxy->ptr : NULL);
+    TEST_NATIVE_OBJECT(cx, cobj);
+    
+    bool ret = false;
+    if( cobj->getTexture() )
+        ret = true;
+    
+    JS_SET_RVAL(cx, vp, BOOLEAN_TO_JSVAL(ret));
+    
+    return true;
 }
 
 bool js_cocos2dx_CCTexture2D_setTexParameters(JSContext *cx, uint32_t argc, jsval *vp)
@@ -3819,11 +3980,14 @@ bool js_cocos2dx_CCGLProgram_setUniformLocationWith4f(JSContext *cx, uint32_t ar
 		cobj->setUniformLocationWith2f(arg0, arg1, arg2);
 	}
     if(argc == 4) {
+        ok &= JS::ToNumber(cx, argv[2], &arg2);
         ok &= JS::ToNumber(cx, argv[3], &arg3);
         JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
 		cobj->setUniformLocationWith3f(arg0, arg1, arg2, arg3);
     }
     if(argc == 5) {
+        ok &= JS::ToNumber(cx, argv[2], &arg2);
+        ok &= JS::ToNumber(cx, argv[3], &arg3);
         ok &= JS::ToNumber(cx, argv[4], &arg4);
         JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
 		cobj->setUniformLocationWith4f(arg0, arg1, arg2, arg3, arg4);
@@ -4016,9 +4180,9 @@ bool js_cocos2dx_NodeGrid_setGrid(JSContext *cx, uint32_t argc, jsval *vp)
     return false;
 }
 
-// cc.SAXParser.getInstance()
-bool js_SAXParser_getInstance(JSContext *cx, unsigned argc, JS::Value *vp) {
-    __JSSAXDelegator* delegator = __JSSAXDelegator::getInstance();
+// cc.PlistParser.getInstance()
+bool js_PlistParser_getInstance(JSContext *cx, unsigned argc, JS::Value *vp) {
+    __JSPlistDelegator* delegator = __JSPlistDelegator::getInstance();
     SAXParser* parser = delegator->getParser();
     
     jsval jsret;
@@ -4038,9 +4202,9 @@ bool js_SAXParser_getInstance(JSContext *cx, unsigned argc, JS::Value *vp) {
     
     return true;
 }
-// cc.SAXParser.getInstance().parse(filepath)
-bool js_SAXParser_parse(JSContext *cx, unsigned argc, JS::Value *vp) {
-    __JSSAXDelegator* delegator = __JSSAXDelegator::getInstance();
+// cc.PlistParser.getInstance().parse(filepath)
+bool js_PlistParser_parse(JSContext *cx, unsigned argc, JS::Value *vp) {
+    __JSPlistDelegator* delegator = __JSPlistDelegator::getInstance();
     
     bool ok = true;
     jsval *argv = JS_ARGV(cx, vp);
@@ -4066,55 +4230,12 @@ bool js_SAXParser_parse(JSContext *cx, unsigned argc, JS::Value *vp) {
     JS_ReportError(cx, "js_SAXParser_parse : wrong number of arguments: %d, was expecting %d", argc, 1);
     return false;
 }
-// cc.SAXParser.getInstance().preloadPlist(filepath)
-bool js_SAXParser_preloadPlist(JSContext *cx, unsigned argc, JS::Value *vp) {
-    __JSSAXDelegator* delegator = __JSSAXDelegator::getInstance();
-    
-    bool ok = true;
-    jsval *argv = JS_ARGV(cx, vp);
-    if (argc == 1) {
-        std::string arg0;
-        ok &= jsval_to_std_string(cx, argv[0], &arg0);
-        JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
-        
-        ok &= delegator->preloadPlist(arg0);
-        if(!ok)
-            JS_ReportError(cx, "js_SAXParser_preloadPlist : file not found %d", &arg0, 1);
-        return true;
-    }
-    JS_ReportError(cx, "js_SAXParser_parse : wrong number of arguments: %d, was expecting %d", argc, 1);
-    return false;
-}
-// cc.SAXParser.getInstance().unloadPlist(filepath)
-bool js_SAXParser_unloadPlist(JSContext *cx, unsigned argc, JS::Value *vp) {
-    return true;
-}
-// cc.SAXParser.getInstance().getList(key)
-bool js_SAXParser_getList(JSContext *cx, unsigned argc, JS::Value *vp) {
-    __JSSAXDelegator* delegator = __JSSAXDelegator::getInstance();
-    
-    bool ok = true;
-    jsval *argv = JS_ARGV(cx, vp);
-    if (argc == 1) {
-        std::string arg0;
-        ok &= jsval_to_std_string(cx, argv[0], &arg0);
-        JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
-        
-        std::string value = delegator->getList(arg0);
-        jsval ret = std_string_to_jsval(cx, value);
-        JS_SET_RVAL(cx, vp, ret);
-        
-        return true;
-    }
-    JS_ReportError(cx, "js_SAXParser_parse : wrong number of arguments: %d, was expecting %d", argc, 1);
-    return false;
-}
 
-cocos2d::SAXParser* __JSSAXDelegator::getParser() {
+cocos2d::SAXParser* __JSPlistDelegator::getParser() {
     return &_parser;
 }
 
-std::string __JSSAXDelegator::parse(const std::string& path) {
+std::string __JSPlistDelegator::parse(const std::string& path) {
     _result.clear();
     
     SAXParser parser;
@@ -4127,11 +4248,11 @@ std::string __JSSAXDelegator::parse(const std::string& path) {
     return _result;
 }
 
-__JSSAXDelegator::~__JSSAXDelegator(){
+__JSPlistDelegator::~__JSPlistDelegator(){
     CCLOGINFO("deallocing __JSSAXDelegator: %p", this);
 }
 
-void __JSSAXDelegator::startElement(void *ctx, const char *name, const char **atts) {
+void __JSPlistDelegator::startElement(void *ctx, const char *name, const char **atts) {
     _isStoringCharacters = true;
     _currentValue.clear();
     
@@ -4150,7 +4271,7 @@ void __JSSAXDelegator::startElement(void *ctx, const char *name, const char **at
     }
 }
 
-void __JSSAXDelegator::endElement(void *ctx, const char *name) {
+void __JSPlistDelegator::endElement(void *ctx, const char *name) {
     _isStoringCharacters = false;
     std::string elementName = (char*)name;
     
@@ -4174,7 +4295,7 @@ void __JSSAXDelegator::endElement(void *ctx, const char *name) {
     }
 }
 
-void __JSSAXDelegator::textHandler(void *ctx, const char *ch, int len) {
+void __JSPlistDelegator::textHandler(void *ctx, const char *ch, int len) {
     CC_UNUSED_PARAM(ctx);
     std::string text((char*)ch, 0, len);
     
@@ -4194,7 +4315,6 @@ bool jsval_to_TTFConfig(JSContext *cx, jsval v, TTFConfig* ret) {
 
     std::string fontFilePath,customGlyphs;
     double fontSize, glyphs;
-    bool distanceFieldEnable;
 
     bool ok = v.isObject() &&
         JS_ValueToObject(cx, JS::RootedValue(cx, v), &tmp) &&
@@ -4205,9 +4325,9 @@ bool jsval_to_TTFConfig(JSContext *cx, jsval v, TTFConfig* ret) {
         JS_GetProperty(cx, tmp, "distanceFieldEnable", &js_distanceFieldEnable) &&
         JS::ToNumber(cx, js_fontSize, &fontSize) &&
         JS::ToNumber(cx, js_glyphs, &glyphs) &&
-        JS_ValueToBoolean(cx,js_distanceFieldEnable,&distanceFieldEnable) &&
         jsval_to_std_string(cx,js_fontFilePath,&ret->fontFilePath) &&
         jsval_to_std_string(cx,js_customGlyphs,&customGlyphs);
+    bool distanceFieldEnable = JS::ToBoolean(js_distanceFieldEnable);
 
     JSB_PRECONDITION3(ok, cx, false, "Error processing arguments");
 
@@ -4354,6 +4474,9 @@ void register_cocos2dx_js_extensions(JSContext* cx, JSObject* global)
     JS_DefineFunction(cx, jsb_cocos2d_Node_prototype, "setContentSize", js_cocos2dx_CCNode_setContentSize, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     JS_DefineFunction(cx, jsb_cocos2d_Node_prototype, "setAnchorPoint", js_cocos2dx_CCNode_setAnchorPoint, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     JS_DefineFunction(cx, jsb_cocos2d_Node_prototype, "setColor", js_cocos2dx_CCNode_setColor, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    
+    JS_DefineFunction(cx, jsb_cocos2d_Component_prototype, "onEnter", js_cocos2dx_Component_onEnter, 0, JSPROP_ENUMERATE  | JSPROP_PERMANENT);
+    JS_DefineFunction(cx, jsb_cocos2d_Component_prototype, "onExit", js_cocos2dx_Component_onExit, 0, JSPROP_ENUMERATE  | JSPROP_PERMANENT);
 
     JS_DefineFunction(cx, jsb_cocos2d_GLProgram_prototype, "setUniformLocationF32", js_cocos2dx_CCGLProgram_setUniformLocationWith4f, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     JS_DefineFunction(cx, jsb_cocos2d_GLProgram_prototype, "getProgram", js_cocos2dx_CCGLProgram_getProgram, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
@@ -4428,6 +4551,7 @@ void register_cocos2dx_js_extensions(JSContext* cx, JSObject* global)
     JS_DefineFunction(cx, tmpObj, "create", JSB_CCCatmullRomTo_actionWithDuration, 2, JSPROP_READONLY | JSPROP_PERMANENT);
     
     JS_DefineFunction(cx, jsb_cocos2d_Sprite_prototype, "setBlendFunc", js_cocos2dx_CCSprite_setBlendFunc, 2, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineFunction(cx, jsb_cocos2d_Sprite_prototype, "textureLoaded", js_cocos2dx_CCSprite_textureLoaded, 0, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     JS_DefineFunction(cx, jsb_cocos2d_SpriteBatchNode_prototype, "setBlendFunc", js_cocos2dx_CCSpriteBatchNode_setBlendFunc, 2, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_cocos2d_SpriteBatchNode_prototype, "getDescendants", js_cocos2dx_SpriteBatchNode_getDescendants, 0, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     //JS_DefineFunction(cx, jsb_cocos2d_MotionStreak_prototype, "setBlendFunc", js_cocos2dx_CCMotionStreak_setBlendFunc, 2, JSPROP_ENUMERATE | JSPROP_PERMANENT);
@@ -4468,6 +4592,7 @@ void register_cocos2dx_js_extensions(JSContext* cx, JSObject* global)
 	JS_DefineFunction(cx, tmpObj, "create", js_cocos2dx_CCSpawn_create, 0, JSPROP_READONLY | JSPROP_PERMANENT);
 	tmpObj = JSVAL_TO_OBJECT(anonEvaluate(cx, global, "(function () { return cc.Animation; })()"));
 	JS_DefineFunction(cx, tmpObj, "create", js_cocos2dx_CCAnimation_create, 0, JSPROP_READONLY | JSPROP_PERMANENT);
+    JS_DefineFunction(cx, jsb_cocos2d_Scene_prototype, "init", js_cocos2dx_CCScene_init, 0, JSPROP_READONLY | JSPROP_PERMANENT);
     tmpObj = JSVAL_TO_OBJECT(anonEvaluate(cx, global, "(function () { return cc.LayerMultiplex; })()"));
     JS_DefineFunction(cx, tmpObj, "create", js_cocos2dx_CCLayerMultiplex_create, 0, JSPROP_READONLY | JSPROP_PERMANENT);
     
@@ -4478,14 +4603,12 @@ void register_cocos2dx_js_extensions(JSContext* cx, JSObject* global)
 
 	tmpObj = JSVAL_TO_OBJECT(anonEvaluate(cx, global, "(function () { return cc.CallFunc; })()"));
 	JS_DefineFunction(cx, tmpObj, "create", js_callFunc, 1, JSPROP_READONLY | JSPROP_PERMANENT);
+    JS_DefineFunction(cx, jsb_cocos2d_CallFunc_prototype, "initWithFunction", js_cocos2dx_CallFunc_initWithFunction, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     
-    tmpObj = JSVAL_TO_OBJECT(anonEvaluate(cx, global, "(function () { return cc.SAXParser; })()"));
-	JS_DefineFunction(cx, tmpObj, "getInstance", js_SAXParser_getInstance, 0, JSPROP_READONLY | JSPROP_PERMANENT);
-    tmpObj = JSVAL_TO_OBJECT(anonEvaluate(cx, global, "(function () { return cc.SAXParser.getInstance(); })()"));
-	JS_DefineFunction(cx, tmpObj, "parse", js_SAXParser_parse, 1, JSPROP_READONLY | JSPROP_PERMANENT);
-    JS_DefineFunction(cx, tmpObj, "preloadPlist", js_SAXParser_preloadPlist, 1, JSPROP_READONLY | JSPROP_PERMANENT);
-    JS_DefineFunction(cx, tmpObj, "unloadPlist", js_SAXParser_unloadPlist, 1, JSPROP_READONLY | JSPROP_PERMANENT);
-    JS_DefineFunction(cx, tmpObj, "getList", js_SAXParser_getList, 1, JSPROP_READONLY | JSPROP_PERMANENT);
+    tmpObj = JSVAL_TO_OBJECT(anonEvaluate(cx, global, "(function () { return cc.PlistParser; })()"));
+	JS_DefineFunction(cx, tmpObj, "getInstance", js_PlistParser_getInstance, 0, JSPROP_READONLY | JSPROP_PERMANENT);
+    tmpObj = JSVAL_TO_OBJECT(anonEvaluate(cx, global, "(function () { return cc.PlistParser.getInstance(); })()"));
+	JS_DefineFunction(cx, tmpObj, "parse", js_PlistParser_parse, 1, JSPROP_READONLY | JSPROP_PERMANENT);
 
     
 	tmpObj = JSVAL_TO_OBJECT(anonEvaluate(cx, global, "(function () { return cc.GLProgram; })()"));

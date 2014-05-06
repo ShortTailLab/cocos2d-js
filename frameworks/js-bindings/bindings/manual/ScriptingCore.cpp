@@ -1,10 +1,26 @@
-//
-//  ScriptingCore.cpp
-//  testmonkey
-//
-//  Created by Rolando Abarca on 3/14/12.
-//  Copyright (c) 2012 Zynga Inc. All rights reserved.
-//
+/*
+ * Created by Rolando Abarca on 3/14/12.
+ * Copyright (c) 2012 Zynga Inc. All rights reserved.
+ * Copyright (c) 2013-2014 Chukong Technologies Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include "ScriptingCore.h"
 
@@ -15,6 +31,7 @@
 #include "cocos2d.h"
 #include "local-storage/LocalStorage.h"
 #include "cocos2d_specifics.hpp"
+#include "jsb_cocos2dx_auto.hpp"
 #include "js_bindings_config.h"
 // for debug socket
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -394,7 +411,8 @@ void ScriptingCore::string_report(jsval val) {
         LOGD("val : (return value is false");
         // return 1;
     } else if (JSVAL_IS_STRING(val)) {
-        JSString *str = JS_ValueToString(this->getGlobalContext(), val);
+        JSContext* cx = this->getGlobalContext();
+        JSString *str = JS::ToString(cx, JS::RootedValue(cx, val));
         if (NULL == str) {
             LOGD("val : return string is NULL");
         } else {
@@ -421,7 +439,7 @@ bool ScriptingCore::evalString(const char *string, jsval *outVal, const char *fi
     
     JSAutoCompartment ac(cx, global);
     
-    JSScript* script = JS_CompileScript(cx, global, string, strlen(string), filename, 1);
+    JSScript* script = JS_CompileScript(cx, JS::RootedObject(cx, global), string, strlen(string), JS::CompileOptions(cx));
     if (script)
     {
         bool evaluatedOK = JS_ExecuteScript(cx, global, script, outVal);
@@ -461,7 +479,11 @@ void ScriptingCore::removeAllRoots(JSContext *cx) {
     HASH_CLEAR(hh, _native_js_global_ht);
 }
 
+#ifdef JS_THREADSAFE
+static JSPrincipals shellTrustedPrincipals = { mozilla::Atomic<int32_t>(1) };
+#else
 static JSPrincipals shellTrustedPrincipals = { 1 };
+#endif
 
 static bool
 CheckObjectAccess(JSContext *cx, JS::HandleObject obj, JS::HandleId id, JSAccessMode mode,
@@ -611,6 +633,21 @@ void ScriptingCore::compileScript(const char *path, JSObject* global, JSContext*
     JS_EndRequest(cx);
 }
 
+void ScriptingCore::cleanScript(const char *path)
+{
+    auto it = filename_script.find(path);
+    if (it != filename_script.end())
+    {
+        filename_script.erase(it);
+    }
+
+}
+
+void ScriptingCore::cleanAllScript()
+{
+    filename_script.clear();
+}
+
 bool ScriptingCore::runScript(const char *path, JSObject* global, JSContext* cx)
 {
     if (global == NULL) {
@@ -750,7 +787,7 @@ bool ScriptingCore::executeScript(JSContext *cx, uint32_t argc, jsval *vp)
 {
     if (argc >= 1) {
         jsval* argv = JS_ARGV(cx, vp);
-        JSString* str = JS_ValueToString(cx, argv[0]);
+        JSString* str = JS::ToString(cx, JS::RootedValue(cx, argv[0]));
         JSStringWrapper path(str);
         bool res = false;
         if (argc == 2 && argv[1].isString()) {
@@ -930,6 +967,52 @@ int ScriptingCore::handleNodeEvent(void* data)
         cleanupSchedulesAndActions(p);
     }
 
+    return ret;
+}
+
+int ScriptingCore::handleComponentEvent(void* data)
+{
+    if (NULL == data)
+        return 0;
+    
+    BasicScriptData* basicScriptData = static_cast<BasicScriptData*>(data);
+    if (NULL == basicScriptData->nativeObject || NULL == basicScriptData->value)
+        return 0;
+    
+    Component* node = static_cast<Component*>(basicScriptData->nativeObject);
+    int action = *((int*)(basicScriptData->value));
+    
+    js_proxy_t * p = jsb_get_native_proxy(node);
+    if (!p) return 0;
+    
+    int ret = 0;
+    jsval retval;
+    jsval dataVal = INT_TO_JSVAL(1);
+    
+    if (action == kComponentOnEnter)
+    {
+        if (isFunctionOverridedInJS(p->obj, "onEnter", js_cocos2dx_Component_onEnter))
+        {
+            ret = executeFunctionWithOwner(OBJECT_TO_JSVAL(p->obj), "onEnter", 1, &dataVal, &retval);
+        }
+        resumeSchedulesAndActions(p);
+    }
+    else if (action == kComponentOnExit)
+    {
+        if (isFunctionOverridedInJS(p->obj, "onExit", js_cocos2dx_Component_onExit))
+        {
+            ret = executeFunctionWithOwner(OBJECT_TO_JSVAL(p->obj), "onExit", 1, &dataVal, &retval);
+        }
+        pauseSchedulesAndActions(p);
+    }
+    else if (action == kComponentOnUpdate)
+    {
+        if (isFunctionOverridedInJS(p->obj, "update", js_cocos2dx_Component_update))
+        {
+            ret = executeFunctionWithOwner(OBJECT_TO_JSVAL(p->obj), "update", 1, &dataVal, &retval);
+        }
+    }
+    
     return ret;
 }
 
@@ -1231,6 +1314,11 @@ int ScriptingCore::sendEvent(ScriptEvent* evt)
             {
                 TouchesScriptData* data = (TouchesScriptData*)evt->data;
                 return handleTouchesEvent(data->nativeObject, data->actionType, data->touches, data->event);
+            }
+            break;
+        case kComponentEvent:
+            {
+                return handleComponentEvent(evt->data);
             }
             break;
         default:

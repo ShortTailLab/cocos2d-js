@@ -1,7 +1,7 @@
 /****************************************************************************
- Copyright (c) 2010-2012 cocos2d-x.org
  Copyright (c) 2008-2010 Ricardo Quesada
- Copyright (c) 2011      Zynga Inc.
+ Copyright (c) 2011-2012 cocos2d-x.org
+ Copyright (c) 2013-2014 Chukong Technologies Inc.
 
  http://www.cocos2d-x.org
 
@@ -151,9 +151,7 @@ var CocosDenshionTest = cc.LayerGradient.extend({
     _beginPos:cc.p(0, 0),
     _testCount:0,
     ctor:function () {
-        this._super();
-
-        this.init(cc.color(0, 0, 0, 255), cc.color(148, 80, 120, 255));
+        this._super(cc.color(0, 0, 0, 255), cc.color(148, 80, 120, 255));
 
         this._itemMenu = cc.Menu.create();
         var winSize = director.getWinSize();
@@ -182,7 +180,8 @@ var CocosDenshionTest = cc.LayerGradient.extend({
              cc.eventManager.addListener({
                 event: cc.EventListener.MOUSE,
                  onMouseMove: function(event){
-                     event.getCurrentTarget().moveMenu(event.getDelta());
+                     if(event.getButton() != undefined)
+                        event.getCurrentTarget().moveMenu(event.getDelta());
                  }
              }, this);
 

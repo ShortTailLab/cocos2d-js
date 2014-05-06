@@ -1,7 +1,7 @@
 /****************************************************************************
- Copyright (c) 2010-2012 cocos2d-x.org
  Copyright (c) 2008-2010 Ricardo Quesada
- Copyright (c) 2011      Zynga Inc.
+ Copyright (c) 2011-2012 cocos2d-x.org
+ Copyright (c) 2013-2014 Chukong Technologies Inc.
 
  http://www.cocos2d-x.org
 
@@ -516,10 +516,10 @@ var CameraOrbitTest = TestNodeDemo.extend({
     },
     onEnter:function () {
         this._super();
-        director.setProjection(cc.DIRECTOR_PROJECTION_3D);
+        director.setProjection(cc.Director.PROJECTION_3D);
     },
     onExit:function () {
-        director.setProjection(cc.DIRECTOR_PROJECTION_2D);
+        director.setProjection(cc.Director.PROJECTION_2D);
         this._super();
     },
     title:function () {
@@ -582,11 +582,11 @@ var CameraZoomTest = TestNodeDemo.extend({
     onEnter:function () {
         this._super();
         //TODO
-        director.setProjection(cc.DIRECTOR_PROJECTION_3D);
+        director.setProjection(cc.Director.PROJECTION_3D);
     },
     onExit:function () {
         //TODO
-        director.setProjection(cc.DIRECTOR_PROJECTION_2D);
+        director.setProjection(cc.Director.PROJECTION_2D);
         this._super();
     },
     title:function () {
@@ -667,11 +667,11 @@ var CameraCenterTest = TestNodeDemo.extend({
 
     onEnter:function(){
         this._super();
-        cc.director.setProjection(cc.DIRECTOR_PROJECTION_3D);
+        cc.director.setProjection(cc.Director.PROJECTION_3D);
     },
 
     onExit:function(){
-        cc.director.setProjection(cc.DIRECTOR_PROJECTION_2D);
+        cc.director.setProjection(cc.Director.PROJECTION_2D);
         this._super();
     },
 

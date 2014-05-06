@@ -1,7 +1,7 @@
 /****************************************************************************
- Copyright (c) 2010-2012 cocos2d-x.org
  Copyright (c) 2008-2010 Ricardo Quesada
- Copyright (c) 2011      Zynga Inc.
+ Copyright (c) 2011-2012 cocos2d-x.org
+ Copyright (c) 2013-2014 Chukong Technologies Inc.
 
  http://www.cocos2d-x.org
 
@@ -102,7 +102,8 @@ var LayerTest1 = LayerTest.extend({
             cc.eventManager.addListener({
                 event: cc.EventListener.MOUSE,
                 onMouseMove: function(event){
-                    event.getCurrentTarget().updateSize(event.getLocation());
+                    if(event.getButton() != undefined)
+                        event.getCurrentTarget().updateSize(event.getLocation());
                 }
             }, this);
 
@@ -450,7 +451,8 @@ var LayerGradient = LayerTest.extend({
                     event.getCurrentTarget().updateGradient(event.getLocation());
                 },
                 onMouseMove: function(event){
-                    event.getCurrentTarget().updateGradient(event.getLocation());
+                    if(event.getButton() != undefined)
+                        event.getCurrentTarget().updateGradient(event.getLocation());
                 }
             }, this);
         }

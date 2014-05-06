@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2014 Chukong Technologies Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 //
 // cocos2d boot
 //
@@ -496,7 +518,7 @@ cc.loader = {
      * @param {Function} cb     callback
      */
     loadAliases : function(url, cb){
-        cc.FileUtils.getInstance().loadFilenameLookup(url);
+        cc.fileUtils.loadFilenameLookup(url);
         if(cb) cb();
     },
 
@@ -543,17 +565,17 @@ cc.loader = {
     }
     
 };
-cc.defineGetterSetter(cc.loader, "", function(){
+cc.defineGetterSetter(cc.loader, "resPath", function(){
     return this._resPath;
 }, function(resPath){
-    this._resPath = resPath || "resPath";
-    cc.FileUtils.getInstance().setSearchPath(this._resPath);
+    this._resPath = resPath || "";
+    cc.FileUtils.getInstance().addSearchPath(this._resPath);
 });
 cc.defineGetterSetter(cc.loader, "audioPath", function(){
-    return this._resPath;
+    return this._audioPath;
 }, function(audioPath){
     this._audioPath = audioPath || "";
-    cc.FileUtils.getInstance().setSearchPath(this._audioPath);
+    cc.FileUtils.getInstance().addSearchPath(this._audioPath);
 });
 
 //+++++++++++++++++++++++++something about loader end+++++++++++++++++++++++++++++
@@ -568,6 +590,10 @@ cc.view.getDevicePixelRatio = function () {
     var sys = cc.sys;
     return (sys.os == sys.OS_IOS || sys.os == sys.OS_OSX) ? 2 : 1;
 };
+cc.view.convertToLocationInView = function (tx, ty, relatedPos) {
+    var _devicePixelRatio = cc.view.getDevicePixelRatio();
+    return {x: _devicePixelRatio * (tx - relatedPos.left), y: _devicePixelRatio * (relatedPos.top + relatedPos.height - ty)};
+};
 cc.view.enableRetina = function(enabled) {};
 cc.view.isRetinaEnabled = function() {
     var sys = cc.sys;
@@ -576,6 +602,20 @@ cc.view.isRetinaEnabled = function() {
 cc.view.adjustViewPort = function() {};
 cc.view.resizeWithBrowserSize = function () {return;};
 cc.view.setResizeCallback = function() {return;};
+cc.view.enableAutoFullScreen = function () {return;};
+cc.view.isAutoFullScreenEnabled = function() {return true;};
+cc.view._setDesignResolutionSize = cc.view.setDesignResolutionSize;
+cc.view.setDesignResolutionSize = function(width,height,resolutionPolicy){
+    cc.view._setDesignResolutionSize(width,height,resolutionPolicy);
+    cc.winSize = cc.director.getWinSize();
+};
+cc.view.setResolutionPolicy = function(resolutionPolicy){
+    var size = cc.view.getDesignResolutionSize()
+    cc.view.setDesignResolutionSize(size.width,size.height,resolutionPolicy);
+};
+cc.view.setContentTranslateLeftTop = function(){return;};
+cc.view.getContentTranslateLeftTop = function(){return null;};
+cc.view.setFrameZoomFactor = function(){return;};
 
 cc.eventManager = cc.director.getEventDispatcher();
 cc.audioEngine = cc.AudioEngine.getInstance();
@@ -584,13 +624,25 @@ cc.audioEngine.end = function(){
 };
 cc.configuration = cc.Configuration.getInstance();
 cc.textureCache = cc.director.getTextureCache();
+cc.textureCache._addImage = cc.textureCache.addImage;
+cc.textureCache.addImage = function(url, cb, target) {
+    if (cb) {
+        target && (cb = cb.bind(target));
+        this.addImageAsync(url, cb);
+    }
+    else
+        return this._addImage(url);
+};
 cc.shaderCache = cc.ShaderCache.getInstance();
 cc.animationCache = cc.AnimationCache.getInstance();
 cc.spriteFrameCache = cc.SpriteFrameCache.getInstance();
 //cc.saxParser
-cc.plistParser = cc.SAXParser.getInstance();
+cc.plistParser = cc.PlistParser.getInstance();
 //cc.tiffReader;
 //cc.imeDispatcher;
+
+// File utils (only in JSB)
+cc.fileUtils = cc.FileUtils.getInstance();
 
 cc.screen = {
     init: function() {},
@@ -888,6 +940,9 @@ cc.game = {
     DEBUG_MODE_INFO_FOR_WEB_PAGE : 4,
     DEBUG_MODE_WARN_FOR_WEB_PAGE : 5,
     DEBUG_MODE_ERROR_FOR_WEB_PAGE : 6,
+
+    EVENT_HIDE: "game_on_hide",
+    EVENT_SHOW: "game_on_show",
     
     /**
      * Key of config
@@ -962,27 +1017,14 @@ cc.game = {
     },
     /**
      * Run game.
-     * @private
-     */
-    _runMainLoop : function(){
-        var self = this, config = self.config, CONFIG_KEY = self.CONFIG_KEY,
-        frameRate = config[CONFIG_KEY.frameRate], director = cc.director;
-        director.setDisplayStats(config[CONFIG_KEY.showFPS]);
-        director.mainLoop();
-        self._paused = false;
-    },
-    /**
-     * Run game.
      */
     run : function(){
         var self = this;
         if(!self._prepareCalled){
             self.prepare(function(){
-                self._runMainLoop();
                 self.onStart();
             });
         }else{
-            self._runMainLoop();
             self.onStart();
         }
     },
@@ -1007,6 +1049,7 @@ cc.game = {
             var data = JSON.parse(txt);
             this.config = _init(data || {});
         }catch(e){
+	        cc.log("Failed to read or parse project.json");
             this.config = _init({});
         }
 //        cc._initDebugSetting(this.config[CONFIG_KEY.debugMode]);

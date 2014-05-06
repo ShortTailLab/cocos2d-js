@@ -1,8 +1,7 @@
 /****************************************************************************
-
- http://www.cocos2d-html5.org
- http://www.cocos2d-iphone.org
- http://www.cocos2d-x.org
+ Copyright (c) 2008-2010 Ricardo Quesada
+ Copyright (c) 2011-2012 cocos2d-x.org
+ Copyright (c) 2013-2014 Chukong Technologies Inc.
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +40,6 @@ var BaseTestLayer = cc.LayerGradient.extend({
 
         cc.sys.garbageCollect();
 
-        this._super();
-
         // default gradient colors
         var a = cc.color(98,99,117,255);
         var b = cc.color(0,0,0,255);
@@ -58,7 +55,7 @@ var BaseTestLayer = cc.LayerGradient.extend({
             b = cc.color(0,0,0,255);
         }
 
-        this.init( a, b );
+	    this._super( a, b );
 
         // Update winsize in case it was resized
         winSize = director.getWinSize();

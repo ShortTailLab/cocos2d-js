@@ -1,7 +1,7 @@
 /****************************************************************************
- Copyright (c) 2010-2012 cocos2d-x.org
  Copyright (c) 2008-2010 Ricardo Quesada
- Copyright (c) 2011      Zynga Inc.
+ Copyright (c) 2011-2012 cocos2d-x.org
+ Copyright (c) 2013-2014 Chukong Technologies Inc.
  Copyright (c) 2013      Surith Thekkiam
 
  http://www.cocos2d-x.org
@@ -39,8 +39,7 @@ var S9SpriteTestDemo = cc.LayerGradient.extend({
     _subtitle:"",
 
     ctor:function() {
-        this._super();
-        this.init( cc.color(0,0,0,255), cc.color(98,99,117,255));
+        this._super(cc.color(0,0,0,255), cc.color(98,99,117,255));
         cc.spriteFrameCache.addSpriteFrames(s_s9s_blocks9_plist);
         cc.log('sprite frames added to sprite frame cache...');
     },

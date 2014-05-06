@@ -1,6 +1,7 @@
 /****************************************************************************
- Copyright (c) 2010-2013 cocos2d-x.org
  Copyright (c) 2008-2010 Ricardo Quesada
+ Copyright (c) 2011-2012 cocos2d-x.org
+ Copyright (c) 2013-2014 Chukong Technologies Inc.
  Copyright (c) 2012 Pierre-David Bélanger
 
  http://www.cocos2d-x.org
@@ -514,7 +515,7 @@ var RawStencilBufferTest = BaseClippingNodeTest.extend({
         var planeSize = cc.pMult(winPoint, 1.0 / _PLANE_COUNT);
 
         gl.enable(gl.STENCIL_TEST);
-        //cc.CHECK_GL_ERROR_DEBUG();
+        //cc.checkGLErrorDebug();
 
         for (var i = 0; i < _PLANE_COUNT; i++) {
             var stencilPoint = cc.pMult(planeSize, _PLANE_COUNT - i);
@@ -525,7 +526,7 @@ var RawStencilBufferTest = BaseClippingNodeTest.extend({
 	        this._sprite.y = y;
 
             this.setupStencilForClippingOnPlane(i);
-            //cc.CHECK_GL_ERROR_DEBUG();
+            //cc.checkGLErrorDebug();
 
             cc._drawingUtil.drawSolidRect(cc.p(0, 0), stencilPoint, cc.color(255, 255, 255, 255));
 
@@ -535,7 +536,7 @@ var RawStencilBufferTest = BaseClippingNodeTest.extend({
             cc.kmGLPopMatrix();
 
             this.setupStencilForDrawingOnPlane(i);
-            //cc.CHECK_GL_ERROR_DEBUG();
+            //cc.checkGLErrorDebug();
 
             cc._drawingUtil.drawSolidRect(cc.p(0, 0), winPoint, _planeColor[i]);
 
@@ -546,7 +547,7 @@ var RawStencilBufferTest = BaseClippingNodeTest.extend({
         }
 
         gl.disable(gl.STENCIL_TEST);
-        //cc.CHECK_GL_ERROR_DEBUG();
+        //cc.checkGLErrorDebug();
     },
 
     setupStencilForClippingOnPlane:function (plane) {

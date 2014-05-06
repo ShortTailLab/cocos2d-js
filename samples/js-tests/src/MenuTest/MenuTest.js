@@ -1,7 +1,7 @@
 /****************************************************************************
- Copyright (c) 2010-2012 cocos2d-x.org
  Copyright (c) 2008-2010 Ricardo Quesada
- Copyright (c) 2011      Zynga Inc.
+ Copyright (c) 2011-2012 cocos2d-x.org
+ Copyright (c) 2013-2014 Chukong Technologies Inc.
 
  http://www.cocos2d-x.org
 
@@ -330,7 +330,7 @@ var MenuLayer4 = cc.Layer.extend({
         this.init();
     },
     init:function () {
-        this._super();
+        //this._super();
         cc.MenuItemFont.setFontName("American Typewriter");
         cc.MenuItemFont.setFontSize(18);
 
@@ -519,7 +519,7 @@ var MenuTestScene = TestScene.extend({
         var layer5 = new MenuBugsTest();
         var layer6 = new RemoveMenuItemWhenMove();
 
-        var layer = cc.LayerMultiplex.create(layer1, layer2, layer3, layer4, layer5,layer6);
+        var layer = cc.LayerMultiplex.create(layer1, layer2, layer3, layer4, layer5, layer6);
         this.addChild(layer, 0);
 
         director.runScene(this);

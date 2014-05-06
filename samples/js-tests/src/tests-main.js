@@ -1,7 +1,7 @@
 /****************************************************************************
- Copyright (c) 2010-2012 cocos2d-x.org
  Copyright (c) 2008-2010 Ricardo Quesada
- Copyright (c) 2011      Zynga Inc.
+ Copyright (c) 2011-2012 cocos2d-x.org
+ Copyright (c) 2013-2014 Chukong Technologies Inc.
 
  http://www.cocos2d-x.org
 
@@ -43,22 +43,20 @@ var TestScene = cc.Scene.extend({
     ctor:function (bPortrait) {
         this._super();
         this.init();
-    },
 
-    // callbacks
-    onEnter:function () {
-        this._super();
         var label = cc.LabelTTF.create("Main Menu", "Arial", 20);
         var menuItem = cc.MenuItemLabel.create(label, this.onMainMenuCallback, this);
 
         var menu = cc.Menu.create(menuItem);
         menu.x = 0;
-	    menu.y = 0;
+        menu.y = 0;
         menuItem.x = winSize.width - 50;
-	    menuItem.y = 25;
+        menuItem.y = 25;
 
         this.addChild(menu, 1);
     },
+
+    // callbacks
     onMainMenuCallback:function () {
         var scene = cc.Scene.create();
         var layer = new TestController();
@@ -83,9 +81,7 @@ var TestController = cc.LayerGradient.extend({
     isMouseDown:false,
 
     ctor:function() {
-        this._super();
-        // this.init( cc.color(0,0,0,255), cc.color(98,99,117,255), cc.p(-1,-1));
-        this.init( cc.color(0,0,0,255), cc.color(0x46,0x82,0xB4,255));
+        this._super(cc.color(0,0,0,255), cc.color(0x46,0x82,0xB4,255));
 
         // globals
         director = cc.director;
@@ -158,8 +154,8 @@ var TestController = cc.LayerGradient.extend({
             cc.eventManager.addListener({
                 event: cc.EventListener.MOUSE,
                 onMouseMove: function (event) {
-                    event.getCurrentTarget().moveMenu(event.getDelta());
-                    return true;
+                    if(event.getButton() != undefined)
+                        event.getCurrentTarget().moveMenu(event.getDelta());
                 },
                 onMouseScroll: function (event) {
                     var delta = event.getScrollY();

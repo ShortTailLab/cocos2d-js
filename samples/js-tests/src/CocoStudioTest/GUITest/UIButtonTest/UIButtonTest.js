@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013 cocos2d-x.org
+ Copyright (c) 2011-2012 cocos2d-x.org
+ Copyright (c) 2013-2014 Chukong Technologies Inc.
 
  http://www.cocos2d-x.org
 
@@ -43,7 +44,7 @@ var UIButtonEditorTest = UIBaseLayer.extend({
 
     touchEvent: function (sender, type) {
         switch (type) {
-            case ccui.Widget.TOUCH_BAGAN:
+            case ccui.Widget.TOUCH_BEGAN:
                 this._topDisplayText.setText("Touch Down");
                 break;
 
