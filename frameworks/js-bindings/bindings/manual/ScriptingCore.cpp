@@ -1573,7 +1573,10 @@ void dumpException(JSContext *cx, const std::string& filename)
     
     JSErrorReport* report = JS_ErrorFromException(cx, exception);
     if (!report)
+    {
+        LOGD("No runtime error report");
         return;
+    }
     
     std::string typeStr = "";
     if(report->flags == JSREPORT_WARNING)
@@ -1601,9 +1604,7 @@ JSTrapStatus throwHook(JSContext *cx, JSScript *script, jsbytecode *pc, jsval *r
     std::string filename = JS_GetScriptFilename(cx, script);
     std::string base = filename.substr(0, filename.find("src"));
 
-    static const char line[] =
-    "------------------------------------------------------------------------\n";
-    LOGD("%s", line);
+    LOGD("-----------------------BEGIN ERROR--------------------------\n");
     {
         auto state = JS_SaveExceptionState(cx);
 
@@ -1626,7 +1627,7 @@ JSTrapStatus throwHook(JSContext *cx, JSScript *script, jsbytecode *pc, jsval *r
 
         JS_RestoreExceptionState(cx, state);
     }
-    LOGD("%s", line);
+    LOGD("------------------------END ERROR---------------------------\n");
     return JSTRAP_ERROR;
 }
 
