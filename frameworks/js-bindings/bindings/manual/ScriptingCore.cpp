@@ -1566,10 +1566,67 @@ bool JSBDebug_BufferWrite(JSContext* cx, unsigned argc, jsval* vp)
     return true;
 }
 
+void dumpException(JSContext *cx, const std::string& filename)
+{
+    JS::RootedValue exception(cx);
+    JS_GetPendingException(cx, &exception);
+    
+    JSErrorReport* report = JS_ErrorFromException(cx, exception);
+    if (!report)
+        return;
+    
+    std::string typeStr = "";
+    if(report->flags == JSREPORT_WARNING)
+        typeStr = "WARNING";
+    else if(report->flags == JSREPORT_EXCEPTION)
+        typeStr = "EXCEPTION";
+    else if(report->flags == JSREPORT_STRICT)
+        typeStr = "STRICT";
+    else
+        typeStr = "ERROR";
+
+    size_t length = 0;
+    while (report->ucmessage[length] != 0) ++length;
+    
+    JSString* msgStr = JS_NewExternalString(cx, report->ucmessage, length, nullptr);
+
+    char* message = JS_EncodeStringToUTF8(cx, msgStr);
+    
+    LOGD("%s: %s at %s\n", typeStr.c_str(), message, filename.c_str());
+    JS_free(cx, message);
+}
+
 JSTrapStatus throwHook(JSContext *cx, JSScript *script, jsbytecode *pc, jsval *rval, void *closure)
 {
-    const char* filename = JS_GetScriptFilename(cx, script);
-    LOGD("!!! exception throw from %s", filename);
+    std::string filename = JS_GetScriptFilename(cx, script);
+    std::string base = filename.substr(0, filename.find("src"));
+
+    static const char line[] =
+    "------------------------------------------------------------------------\n";
+    LOGD("%s", line);
+    {
+        auto state = JS_SaveExceptionState(cx);
+
+        dumpException(cx, filename);
+
+        char *buf = JS::FormatStackDump(cx, nullptr, true, false, false);
+        if (!buf)
+            LOGD("%s", "Failed to format JavaScript stack for dump\n");
+        else
+        {
+            std::string trace(buf);
+            size_t pos;
+            while ((pos = trace.find(base)) != std::string::npos)
+            {
+                trace.replace(pos, base.size(), "");
+            }
+            LOGD("%s", trace.c_str());
+            JS_free(cx, buf);
+        }
+
+        JS_RestoreExceptionState(cx, state);
+    }
+    LOGD("%s", line);
     return JSTRAP_ERROR;
 }
 
@@ -1582,7 +1639,7 @@ void ScriptingCore::enableDebugger()
         JS_SetDebugMode(_cx, true);
         
         // install an exception hook.
-        //JS_SetThrowHook(_rt, throwHook, nullptr);
+        JS_SetThrowHook(_rt, throwHook, nullptr);
         
         JS_BeginRequest(_cx);
         
