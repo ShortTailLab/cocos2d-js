@@ -1566,7 +1566,7 @@ bool JSBDebug_BufferWrite(JSContext* cx, unsigned argc, jsval* vp)
     return true;
 }
 
-void dumpException(JSContext *cx, const std::string& filename)
+void dumpException(JSContext *cx)
 {
     JS::RootedValue exception(cx);
     JS_GetPendingException(cx, &exception);
@@ -1595,7 +1595,7 @@ void dumpException(JSContext *cx, const std::string& filename)
 
     char* message = JS_EncodeStringToUTF8(cx, msgStr);
     
-    LOGD("%s: %s at %s:%u\n", typeStr.c_str(), message, filename.c_str(), report->lineno);
+    LOGD("%s: %s at %s:%u\n", typeStr.c_str(), message, report->filename, report->lineno);
     JS_free(cx, message);
 }
 
@@ -1608,7 +1608,7 @@ JSTrapStatus throwHook(JSContext *cx, JSScript *script, jsbytecode *pc, jsval *r
     {
         auto state = JS_SaveExceptionState(cx);
 
-        dumpException(cx, filename);
+        dumpException(cx);
 
         char *buf = JS::FormatStackDump(cx, nullptr, true, false, false);
         if (!buf)
