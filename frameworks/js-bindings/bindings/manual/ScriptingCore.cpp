@@ -1595,7 +1595,7 @@ void dumpException(JSContext *cx, const std::string& filename)
 
     char* message = JS_EncodeStringToUTF8(cx, msgStr);
     
-    LOGD("%s: %s at %s\n", typeStr.c_str(), message, filename.c_str());
+    LOGD("%s: %s at %s:%u\n", typeStr.c_str(), message, filename.c_str(), report->lineno);
     JS_free(cx, message);
 }
 
