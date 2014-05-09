@@ -1578,7 +1578,7 @@ void dumpException(JSContext *cx)
         return;
     }
     
-    std::string typeStr = "";
+    const char* typeStr = "";
     if(report->flags == JSREPORT_WARNING)
         typeStr = "WARNING";
     else if(report->flags == JSREPORT_EXCEPTION)
@@ -1595,7 +1595,7 @@ void dumpException(JSContext *cx)
 
     char* message = JS_EncodeStringToUTF8(cx, msgStr);
     
-    LOGD("%s: %s at %s:%u\n", typeStr.c_str(), message, report->filename, report->lineno);
+    LOGD("%s: %s at %s:%u\n", typeStr, message, report->filename, report->lineno);
     JS_free(cx, message);
 }
 
@@ -1616,10 +1616,10 @@ JSTrapStatus throwHook(JSContext *cx, JSScript *script, jsbytecode *pc, jsval *r
         else
         {
             std::string trace(buf);
-            size_t pos;
-            while ((pos = trace.find(base)) != std::string::npos)
+            size_t pos = 0;
+            while ((pos = trace.find(base, pos)) != std::string::npos)
             {
-                trace.replace(pos, base.size(), "");
+                trace.erase(pos, base.size());
             }
             LOGD("%s", trace.c_str());
             JS_free(cx, buf);
