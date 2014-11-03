@@ -526,6 +526,8 @@ public:
     
     void animationCallbackFunc(spine::SkeletonAnimation* node, int trackIndex, spEventType type, spEvent* event, int loopCount) const {
         JSContext *cx = ScriptingCore::getInstance()->getGlobalContext();
+        JS_BeginRequest(cx);
+        JSB_AUTOCOMPARTMENT_WITH_GLOBAL_OBJCET
         JSObject *thisObj = JSVAL_IS_VOID(_jsThisObj) ? NULL : JSVAL_TO_OBJECT(_jsThisObj);
         js_proxy_t *proxy = js_get_or_create_proxy(cx, node);
         jsval retval;
@@ -548,10 +550,11 @@ public:
             valArr[4] = loopCountVal;
             
             JS_AddValueRoot(cx, valArr);
-            JSB_AUTOCOMPARTMENT_WITH_GLOBAL_OBJCET
+
             JS_CallFunctionValue(cx, thisObj, _jsCallback, 5, valArr, &retval);
             JS_RemoveValueRoot(cx, valArr);
         }
+        JS_EndRequest(cx);
     }
 };
 
