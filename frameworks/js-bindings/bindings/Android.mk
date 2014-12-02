@@ -15,6 +15,8 @@ LOCAL_SRC_FILES := manual/ScriptingCore.cpp \
                    manual/jsb_opengl_manual.cpp \
                    manual/jsb_opengl_registration.cpp \
                    manual/jsb_event_dispatcher_manual.cpp \
+                   manual/spine/jsb_cocos2dx_spine_manual.cpp \
+                   auto/jsb_cocos2dx_spine_auto.cpp \
                    auto/jsb_cocos2dx_auto.cpp
 
 LOCAL_CFLAGS := -DCOCOS2D_JAVASCRIPT
@@ -38,9 +40,11 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/manual \
 LOCAL_WHOLE_STATIC_LIBRARIES := cocos2dx_static
 LOCAL_WHOLE_STATIC_LIBRARIES += spidermonkey_static
 LOCAL_WHOLE_STATIC_LIBRARIES += cocosdenshion_static
+LOCAL_WHOLE_STATIC_LIBRARIES += spine_static
 
 include $(BUILD_STATIC_LIBRARY)
 
 $(call import-module,external/spidermonkey/prebuilt/android)
 $(call import-module,2d)
 $(call import-module,audio/android)
+$(call import-module,editor-support/spine)
